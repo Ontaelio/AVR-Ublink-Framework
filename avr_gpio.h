@@ -113,6 +113,15 @@ public:
 	void write(uint8_t val);
 	//void enable();
 	//void disable();
+	
+	operator uint8_t() {return ~(*ocr);}
+	pwmPin& operator= (const uint8_t& a) {write(a); return *this;}
+	pwmPin& operator++ () {write (~(*ocr) + 1); return *this;}
+	pwmPin operator++ (int) {write (~(*ocr) + 1); return *this;}
+	pwmPin& operator-- () {write (~(*ocr) - 1); return *this;}
+	pwmPin operator-- (int) {write (~(*ocr) - 1); return *this;}
+	pwmPin& operator+= (const uint16_t& a) {write (~(*ocr) + a); return *this;}
+	pwmPin& operator-= (const uint16_t& a) {write (~(*ocr) - a); return *this;}
 };
 
 /* digital pin standalone functions */
