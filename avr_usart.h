@@ -9,14 +9,14 @@
  * Can be freely used according to the GNU GPL license.
  */
 
-#ifndef AVR_USART_H_
-#define AVR_USART_H_
+#ifndef ATMEGA328_USART_H_
+#define ATMEGA328_USART_H_
 
 #include <stdint.h>
 #include <stdlib.h>
 #include <avr/io.h>
 
-#define USE_BUFFER_FOR_INTS
+#define USE_BUFFER_FOR_INTS // asm stacking doesn't work on Atmega328, must use buffer
 //#define NAN_INFINITY_ENABLED
 
 #define USART_TX	(1<<TXCIE0)
