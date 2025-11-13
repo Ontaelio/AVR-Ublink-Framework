@@ -2,7 +2,7 @@
  * Atmega328 Pin functions file
  * Part of Atmega328 register and peripherals library
  *
- * Dpcumentation available in the provided MD file.
+ * Documentation available in the provided MD file.
  *
  * (c) 2021 Dmitry Reznikov ontaelio(at)gmail.com
  *

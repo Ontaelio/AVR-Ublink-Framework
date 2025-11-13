@@ -2,7 +2,7 @@
  * Atmega328 timers functions header file
  * Part of Atmega328 register and peripherals library
  *
- * Dpcumentation available in the provided MD file.
+ * Documentation available in the provided MD file.
  *
  * (c) 2022 Dmitry Reznikov ontaelio(at)gmail.com
  *
