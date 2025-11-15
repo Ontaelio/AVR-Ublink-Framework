@@ -73,13 +73,13 @@ const uint8_t lights[360]={
 
 ISR(TIMER0_OVF_vect)
 {
-  if (OCR0B) led.high();
-  test.writeB(lights[++light]);
+  if (OCR0B) led.high(); // turn the led on if timer is set
+  test.writeB(lights[++light]); // set up the compare vector
 }
 
 ISR(TIMER0_COMPB_vect)
 {
-  led.low();
+  led.low(); // turn the led off at compare match
 }
 
 void setup() {
