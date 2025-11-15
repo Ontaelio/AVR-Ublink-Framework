@@ -78,6 +78,8 @@ public:
 	//void pwmWrite(uint8_t ch_num, uint16_t val) {}
 	void writeA(uint8_t val) {OCR0A = val;} // write compare value A
 	void writeB(uint8_t val) {OCR0B = val;} // write compare value B
+	uint8_t readA() {return OCR0A;} // get the current compare value A
+	uint8_t readB() {return OCR0B;} // get the current compare value B
 	void channelA(uint8_t com, uint8_t pinmode = 1) 
 		{TCCR0A &= ~0xC0; TCCR0A |= com<<6; if (pinmode) DDRD |= 1<<6;} // change the channel output on the fly
 	void channelB(uint8_t com, uint8_t pinmode = 1)  
