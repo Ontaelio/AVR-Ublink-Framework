@@ -45,11 +45,6 @@
 #define COMPA	0x02
 #define COMPB	0x04
 
-//#define ENABLE	1
-//#define DISABLE 0
-
-
-
 class timer0
 {
 public:
@@ -57,7 +52,7 @@ public:
 	timer0 (uint8_t wgm, uint8_t prsclr = 1, uint8_t depth = 0);
 	void config(); // write set values into corresponding registers
 	//void enableOnly() {TCCR0B = tccrb;}
-	void enable(); // disable, config, enableOnly
+	void enable(); // disable, config, start
 	void disable();
 	void stop() {TCCR0B &= ~0x7;}
 	void start() {TCCR0B = tccrb;}
