@@ -21,7 +21,7 @@ uint8_t light;
 timer0 test(PWM_FAST, CLOCK_PS256);
 digitalPin led(&PORTB, 5, OUTPUT);
 usart term; // used for demo code in loop()
-uint8_t blink_speed = 4; //0 off, 1 on, 2..5 more is slower
+uint8_t blink_speed = 4; //0 off, 1 always on (extremely fast), 2..5 more is slower
 
 // lookup table for a sin wave
 const uint8_t lights[360]={
@@ -74,7 +74,7 @@ const uint8_t lights[360]={
 ISR(TIMER0_OVF_vect)
 {
   // if (OCR0B) led.high(); // turn the led on if timer is set
-  if (test.readB()) led.high(); // turn the led on if timer is set
+  if (test.readB()) led.high(); // turn the led on if compare value is set
   test.writeB(lights[++light]); // set up the compare vector
 }
 
