@@ -74,7 +74,7 @@ class analogPin
 private:
 	uint8_t pinnum;
 public:
-	analogPin(uint8_t pn, uint8_t ps = ADCPS128);
+	analogPin(uint8_t pn);
 	void init(uint8_t ps = ADCPS128);
 	uint16_t read();
 	void start();

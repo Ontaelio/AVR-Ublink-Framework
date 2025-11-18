@@ -105,10 +105,10 @@
 
 
 /* basic analog pins */
-  analogPin::analogPin(uint8_t pn, uint8_t ps)
+  analogPin::analogPin(uint8_t pn)
 	{
 		pinnum = pn;
-		init(ps);
+		//init(ps); doesn't work here in any case
 	}		
 		
   void analogPin::init(uint8_t ps)
