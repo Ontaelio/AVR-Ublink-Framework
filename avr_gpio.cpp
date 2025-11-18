@@ -103,10 +103,8 @@
 			else EIMSK &= ~2; // disable
 	}
 
-	
-//  operator uint8_t() {return read();}
-//  digitalPin& operator= (const uint8_t& a) {write(a); return *this;}
 
+/* basic analog pins */
   analogPin::analogPin(uint8_t pn, uint8_t ps)
 	{
 		pinnum = pn;
@@ -119,6 +117,7 @@
 		ADCSRA |= ps; // set prescaler
 		ADMUX &= ~0xF; // clear channel selection
 		ADMUX |= (1<<REFS0) | pinnum; // assign channel
+		DIDR0 |= 1 << pinnum; // disable digital input
 		ADCSRA |= 1<<ADEN; // enable ADC
 		//read();
 	}
@@ -144,12 +143,18 @@
 		ADCSRA &= ~(1<<ADATE); // clear auto trigger
 	}
 	
-  uint16_t analogPin::check()
+  uint16_t analogPin::check() // read the current conversion result in free running mode
 	{
 		return ( ADCL | (ADCH<<8) );
 	}
 
   void analogPin::AREF(uint8_t m)
+  // by default REFS 0b01 is used (AVcc with an external capacitor on AREF pin)
+  // this can be changed here, with m standing for:
+  // 0 for AREF pin as a ref voltage source with internal Vref turned off
+  // 1 for default operation above
+  // 2 reserved
+  // 3 Internal 1.1V reference with an external capacitor on AREF
     {
 		ADCSRA &= ~(1<<ADEN); // disable ADC
 		ADMUX &= ~(1<<REFS0); // clear bit if set
