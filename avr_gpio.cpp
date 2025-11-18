@@ -151,10 +151,12 @@
   void analogPin::AREF(uint8_t m)
   // by default REFS 0b01 is used (AVcc with an external capacitor on AREF pin)
   // this can be changed here, with m standing for:
-  // 0 for AREF pin as a ref voltage source with internal Vref turned off
-  // 1 for default operation above
+  // 0 or ADC_AREF for AREF pin as a ref voltage source with internal Vref turned off
+  // 1 or ADC_AVCC for default operation above
   // 2 reserved
-  // 3 Internal 1.1V reference with an external capacitor on AREF
+  // 3 or ADC_INT1V for Internal 1.1V reference with an external capacitor on AREF
+  // (0 is identical to analogReference(EXTERNAL) in Arduino framework)
+  // Note: an external capacitor on AREF is recommended, not required. Most boards have it.
     {
 		ADCSRA &= ~(1<<ADEN); // disable ADC
 		ADMUX &= ~(1<<REFS0); // clear bit if set
