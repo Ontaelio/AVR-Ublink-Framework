@@ -44,10 +44,12 @@ void **externalIRQ**(uint8_t c): turn corresponding INT interrupt on or off. INT
 
 This library provides basic ADC functionality that should be enough in most cases. This includes both analogRead-style functions as well as free-running mode support. While analogRead-style allows multiple sensors on ADC pins it takes some time to get the readings and the result is not exact. Free-running mode allows only one sensor but provides better results instantly. One can switch between different inputs in free-running mode, bu only one of them will be working at any given time.
 
-Class **analogPin**(uint8_t pn)
-Creates an object representing a single ADC pin. This object can only be used to access ADC, not digital functions. `pn` is pin number without an 'A' (0-5).
+Class **analogPin**(uint8_t pn, uint8_t ps = ADCPS128)
+Creates an object representing a single ADC pin. This object can only be used to access ADC, not digital functions. `pn` is pin number without an 'A' (0-5). `ps` is useful only if the constructor is invoked inside main(), as it runs init() there too.
 
-void **init**(uint8_t ps = ADCPS128): must be used at least once in setup to start the ADC. `ps` (prescaler) is optional and is set to 128 by default.
+void **init**(uint8_t ps = ADCPS128): must be used at least once in setup to start the ADC _unless_ you create objects inside main() avoiding Arduino shenanigans. `ps` (prescaler) is optional and is set to 128 by default.
+
+Available prescaler constants are `ADCPS128`, `ADCPS64`, `ADCPS32`, `ADCPS16`, `ADCPS8`, `ADCPS4` and `ADCPS2`
 
 uint16_t **read()**: same as `analogRead()`, i.e. the slow way to read a single pin; useful when there are multiple sensors connected. Starts the conversion and waits for it to finish to return the result (blocking).
 
@@ -55,9 +57,9 @@ void **start()**: starts the free-running mode (continuous conversion).
 
 void **stop()**: stops the free-running mode.
 
-uint16_t **check()**: returns the current value in free-running mode. Overloaded operator `=` also returns this (as in `uint16_t a = adc_pin`).
+uint16_t **check()**: returns the current reading in free-running mode. Overloaded operator `=` also returns this (as in `uint16_t a = adc_pin`).
 
-void **AREF**(uint8_t m = 0): can be used to change the reference voltage:
+void **AREF**(uint8_t m = 0): can be used to change the reference voltage for the entire ADC(!):
 
 | setting | meaning
 |---|---|
