@@ -1,5 +1,7 @@
-**Ublink AVR: gpio**\
+# Ublink AVR: gpio
 *Digital, PWM and analog pins*
+
+## Digital pins
 
 Class **digitalPin**(uint8_t* prt, uint8_t pn, uint8_t mode)\
 This class is used to create an object representing a single digital pin. Parameters are:\
