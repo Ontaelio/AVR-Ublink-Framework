@@ -66,7 +66,7 @@
       *pinx = 1 << pinnum;
     }
 	
-  void digitalPin::pinChangeIRQ(uint8_t c)
+  void digitalPin::pinChangeIRQ(uint8_t c) //PCINT
     {
 		if (c)
 		{
@@ -82,7 +82,7 @@
 		}
 	}
 	  
-  void digitalPin::externalIRQ(uint8_t c)
+  void digitalPin::externalIRQ(uint8_t c) //two pins with INT
 	{
 		if ((portx == &PORTD) && (pinnum == 2)) //INT0
 			if (c)
@@ -93,7 +93,7 @@
 			}
 			else EIMSK &= ~1; // disable
 		
-		if ((portx == &PORTD) && (pinnum == 3)) 
+		if ((portx == &PORTD) && (pinnum == 3)) //INT1
 			if (c)
 			{
 				EICRA &= ~12; // clear
@@ -103,6 +103,7 @@
 			else EIMSK &= ~2; // disable
 	}
 
+	
 //  operator uint8_t() {return read();}
 //  digitalPin& operator= (const uint8_t& a) {write(a); return *this;}
 
