@@ -44,7 +44,7 @@ void **externalIRQ**(uint8_t c): turn corresponding INT interrupt on or off. INT
 
 This library provides basic ADC functionality that should be enough in most cases. This includes both analogRead-style functions as well as free-running mode support. While analogRead-style allows multiple sensors on ADC pins it takes some time to get the readings and the result is not exact. Free-running mode allows only one sensor but provides better results instantly. One can switch between different inputs in free-running mode, bu only one of them will be working at any given time.
 
-Class **analogPin**(uint8_t pn, uint8_t ps = ADCPS128)
+Class **analogPin**(uint8_t pn, uint8_t ps = ADCPS128)\
 Creates an object representing a single ADC pin. This object can only be used to access ADC, not digital functions. `pn` is pin number without an 'A' (0-5). `ps` is useful only if the constructor is invoked inside main(), as it runs init() there too.
 
 void **init**(uint8_t ps = ADCPS128): must be used at least once in setup to start the ADC _unless_ you create objects inside main() avoiding Arduino shenanigans. `ps` (prescaler) is optional and is set to 128 by default.
@@ -69,3 +69,26 @@ void **AREF**(uint8_t m = 0): can be used to change the reference voltage for th
 
 Note: an external capacitor on AREF is recommended, not required. Most boards have it.
 
+## PWM pins
+
+This library provides very basic PWM functionality, mostly corresponding to the `analogWrite()` except all pins work in fast PWM mode (8 bit, /64 prescaler). For better PWM control dedicated timer libraries should be used.
+
+Class **pwmPin**(uint8_t pn)\
+Creates a pwm-outputting pin `pn`. `pn` is a 4-bit value where three left bits represent a timer (2|1|0)and the lsb represents the channel. Any of these constants can be used here:
+|Arduino pin | The real pin|Value|_Timer, channel_|
+|----|------|---|---|
+|PIN6 | PIND6 | 2|_timer0, A_
+|PIN5 | PIND5 | 3| _timer0, B_
+|PIN9 | PINB1 | 4|_timer1, A_
+|PIN10 | PINB2 | 5|_timer1, B_
+|PIN11 | PINB3 | 8|_timer2, A_
+|PIN3 | PIND3 | 9|_timer2, B_
+
+void **init()**: not needed, included just in case, you may use it in `setup()` if something goes wrong.
+
+void **write**(uint8_t val): write a pwm value to the pwm pin.
+
+Overloaded operators can also be used on pwmPin objects:\
+`=` to set or read pwm value;\
+`++` and `--`, both prefix and postfix;\
+`+=` and `-=`.

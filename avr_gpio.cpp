@@ -108,7 +108,7 @@
   analogPin::analogPin(uint8_t pn)
 	{
 		pinnum = pn;
-		//init(ps); doesn't work here in any case
+		//init(pn); //seems not to work here, even in main()
 	}		
 		
   void analogPin::init(uint8_t ps)
@@ -202,10 +202,10 @@
 		  
 		  default: break;
 	  }
-	  if (pinnum&8) *(tccra+1) = (1<<CS22); else *(tccra+1) = (1<<CS01) | (1<<CS00); // other stuff for timer 2
-	  if (pinnum&4) {*tccra = 1<<WGM10; *(tccra+1) |= 1<<WGM12;}
+	  if (pinnum&8) *(tccra+1) = (1<<CS22); else *(tccra+1) = (1<<CS01) | (1<<CS00); // prescaler 64, special for timer 2
+	  if (pinnum&4) {*tccra = 1<<WGM10; *(tccra+1) |= 1<<WGM12;} // fast PWM, special for timer1
 	  else  *tccra = (1<<WGM01) | (1<<WGM00);
-	  if (pinnum&1) *tccra |= (1<<COM0B1); else *tccra |= (1<<COM0A1);
+	  if (pinnum&1) *tccra |= (1<<COM0B1); else *tccra |= (1<<COM0A1); // clear on compare match
 	  
   }
   

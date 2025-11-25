@@ -125,7 +125,7 @@ public:
 };
 
 /* digital pin standalone functions */
-
+/* pin change interrupts */
 inline void pinChangeBenable() {PCICR |= (1 << PCIE0);}
 inline void pinChangeCenable() {PCICR |= (1 << PCIE1);}
 inline void pinChangeDenable() {PCICR |= (1 << PCIE2);}
