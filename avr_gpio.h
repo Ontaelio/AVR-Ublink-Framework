@@ -82,6 +82,7 @@ public:
 	uint16_t check();
 	
 	void AREF(uint8_t m = 0);
+	void digitalEnable();
 	
 	operator uint16_t() {return check();}
 };
