@@ -59,6 +59,8 @@ void **stop()**: stops the free-running mode.
 
 uint16_t **check()**: returns the current reading in free-running mode. Overloaded operator `=` also returns this (as in `uint16_t a = adc_pin`).
 
+void **digitalEnable()**: enables sigital input buffer on the pin (disabled in `init()`). For the rare cases when same pin is used for analog and digital input simultaneously. 
+
 void **AREF**(uint8_t m = 0): can be used to change the reference voltage for the entire ADC(!):
 
 | setting | meaning

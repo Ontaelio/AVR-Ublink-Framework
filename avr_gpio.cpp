@@ -142,6 +142,11 @@
 	{
 		ADCSRA &= ~(1<<ADATE); // clear auto trigger
 	}
+  
+  void analogPin::digitalEnable()
+    {
+        DIDR0 &= ~(1<<pinnum); 
+    }
 	
   uint16_t analogPin::check() // read the current conversion result in free running mode
 	{
