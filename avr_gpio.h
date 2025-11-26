@@ -134,5 +134,8 @@ inline void pinChangeBdisable() {PCICR &= ~(1 << PCIE0);}
 inline void pinChangeCdisable() {PCICR &= ~(1 << PCIE1);}
 inline void pinChangeDdisable() {PCICR &= ~(1 << PCIE2);}
 
+/* built-in pull-up disable*/
+inline void pullupDisable() {MCUCR |= 1<<PUD;}
+inline void pullupEnable() {MCUCR &= ~(1<<PUD);}
 
 #endif // ATMEGA328_PINS_H_
