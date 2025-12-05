@@ -126,6 +126,12 @@ public:
 };
 
 /* digital pin standalone functions */
+
+#define INT_LOW 0
+#define INT_ANY 1
+#define INT_FALLING 2
+#define INT_RISING 3
+
 /* pin change interrupts */
 inline void pinChangeBenable() {PCICR |= (1 << PCIE0);}
 inline void pinChangeCenable() {PCICR |= (1 << PCIE1);}
@@ -133,6 +139,10 @@ inline void pinChangeDenable() {PCICR |= (1 << PCIE2);}
 inline void pinChangeBdisable() {PCICR &= ~(1 << PCIE0);}
 inline void pinChangeCdisable() {PCICR &= ~(1 << PCIE1);}
 inline void pinChangeDdisable() {PCICR &= ~(1 << PCIE2);}
+
+/* external interrupt triggers, pins D2 (INT0) and D3 (INT1) */
+void setInt0(uint8_t val);
+void setInt1(uint8_t val);
 
 /* built-in pull-up disable*/
 inline void pullupDisable() {MCUCR |= 1<<PUD;}
