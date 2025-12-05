@@ -30,8 +30,10 @@
 #define PWM_PC_CTC		0x05
 #define PWM_FAST_CTC	0x07
 
-// Clock Select Values
+// Prescaler Select Values
 #define NO_CLOCK		0x00
+
+// Timers 0 and 1 (deprecated)
 #define CLOCK_PS1		0x01
 #define CLOCK_PS8		0x02
 #define CLOCK_PS64		0x03
@@ -39,6 +41,33 @@
 #define CLOCK_PS1024	0x05
 #define CLOCK_EXT_FALLING	0x06
 #define CLOCK_EXT_RISING	0x07
+
+// Timer 0
+#define T0_PS1			0x01
+#define T0_PS8			0x02
+#define T0_PS64			0x03
+#define T0_PS256		0x04
+#define T0_PS1024		0x05
+#define T0_EXT_FALLING	0x06
+#define T0_EXT_RISING	0x07
+
+// Timer 1
+#define T1_PS1			0x01
+#define T1_PS8			0x02
+#define T1_PS64			0x03
+#define T1_PS256		0x04
+#define T1_PS1024		0x05
+#define T1_EXT_FALLING	0x06
+#define T1_EXT_RISING	0x07
+
+// Timer 2
+#define T2_PS1			0x01
+#define T2_PS8			0x02
+#define T2_PS32			0x03
+#define T2_PS64			0x04
+#define T2_PS128		0x05
+#define T2_PS256		0x06
+#define T2_PS1024		0x07
 
 // interrupts
 #define OVF		0x01

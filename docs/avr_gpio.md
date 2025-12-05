@@ -40,6 +40,20 @@ void **pinChangeIRQ**(uint8_t c = 1): turn correcponding pin change interrupt (P
 
 void **externalIRQ**(uint8_t c): turn corresponding INT interrupt on or off. INT0 is connected to pin 2 (PORTD 2) and INT1 to pin 3 (PORTD 3).
 
+## Digital pins standalone functions
+
+void **pinChangeBenable()**\
+void **pinChangeCenable()**\
+void **pinChangeDenable()**\
+void **pinChangeBdisable()**\
+void **pinChangeCdisable()**\
+void **pinChangeDdisable()**\
+Enable/disable pin change interrupt on ports B, C, D.
+
+void **pullupDisable()**\
+void **pullupEnable()**\
+Disable/enable pull-ups on all pins.
+
 ## Analog pins
 
 This library provides basic ADC functionality that should be enough in most cases. This includes both analogRead-style functions as well as free-running mode support. While analogRead-style allows multiple sensors on ADC pins it takes some time to get the readings and the result is not exact. Free-running mode allows only one sensor but provides better results instantly. One can switch between different inputs in free-running mode, bu only one of them will be working at any given time.
