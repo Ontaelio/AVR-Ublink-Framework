@@ -140,6 +140,11 @@ inline void pinChangeBdisable() {PCICR &= ~(1 << PCIE0);}
 inline void pinChangeCdisable() {PCICR &= ~(1 << PCIE1);}
 inline void pinChangeDdisable() {PCICR &= ~(1 << PCIE2);}
 
+/* pin change masks */
+inline void pinChamgeMask0(uint8_t mask) {PCMSK0 = mask;}
+inline void pinChamgeMask1(uint8_t mask) {PCMSK1 = mask;}
+inline void pinChamgeMask2(uint8_t mask) {PCMSK2 = mask;}
+
 /* external interrupt triggers, pins D2 (INT0) and D3 (INT1) */
 void setInt0(uint8_t val);
 void setInt1(uint8_t val);

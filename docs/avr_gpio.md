@@ -50,6 +50,28 @@ void **pinChangeCdisable()**\
 void **pinChangeDdisable()**\
 Enable/disable pin change interrupt on ports B, C, D.
 
+void **pinChamgeBmask**(uint8_t mask)\
+void **pinChamgeCmask**(uint8_t mask)\
+void **pinChamgeDmask**(uint8_t mask)\
+Each bit of the `mask` selects whether pin change interrupt is enabled on the corresponding pin:
+
+|bits:|7|6|5|4|3|2|1|0|
+|----|-|-|-|-|-|-|-|-|
+|B|PCINT7|PCINT6|PCINT5|PCINT4|PCINT3|PCINT2|PCINT1|PCINT0|
+|C|-|PCINT14|PCINT13|PCINT12|PCINT11|PCINT10|PCINT9|PCINT8|
+|D|PCINT23|PCINT22|PCINT21|PCINT20|PCINT19|PCINT18|PCINT17|PCINT16|
+
+void **setInt0**(uint8_t val)\
+void **setInt1**(uint8_t val)\
+Sets level and edges for External Interrupts INT0 and INT1. The following values should be used here:
+
+| val | meaning |
+|-------|----|
+| INT_LOW | Low level generates an interrupt request. |
+| INT_ANY | Any logical change generates an interrupt request. |
+| INT_FALLING | The falling edge generates an interrupt request. |
+| INT_RISING | The rising edge generates an interrupt request. |
+
 void **pullupDisable()**\
 void **pullupEnable()**\
 Disable/enable pull-ups on all pins.
