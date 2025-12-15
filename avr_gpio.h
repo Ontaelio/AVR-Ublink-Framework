@@ -141,9 +141,15 @@ inline void pinChangeCdisable() {PCICR &= ~(1 << PCIE1);}
 inline void pinChangeDdisable() {PCICR &= ~(1 << PCIE2);}
 
 /* pin change masks */
-inline void pinChamgeMask0(uint8_t mask) {PCMSK0 = mask;}
-inline void pinChamgeMask1(uint8_t mask) {PCMSK1 = mask;}
-inline void pinChamgeMask2(uint8_t mask) {PCMSK2 = mask;}
+inline void pinChangeBmask(uint8_t mask) {PCMSK0 = mask;}
+inline void pinChangeCmask(uint8_t mask) {PCMSK1 = mask;}
+inline void pinChangeDmask(uint8_t mask) {PCMSK2 = mask;}
+
+/* enable external interrupts INT0 and INT1 */
+inline void int0enable() {EIMSK |= 1;}
+inline void int1enable() {EIMSK |= 2;}
+inline void int0disable() {EIMSK &= ~1;}
+inline void int1disable() {EIMSK &= ~2;}
 
 /* external interrupt triggers, pins D2 (INT0) and D3 (INT1) */
 void setInt0(uint8_t val);

@@ -221,3 +221,15 @@
 	  
   //void enable();
   //void disable();
+
+void setInt0(uint8_t val)
+{
+	EICRA &= ~3; //clear
+	EICRA |= val;
+}
+void setInt1(uint8_t val)
+{
+	EICRA &= ~12; //clear
+	EICRA |= val << 2;
+}
+
