@@ -10,7 +10,7 @@
  * ========================================================= */
 
 // prescalers, right 4 bits for timer 2, left 4 bits for timers 0 and 1
-#define STOP        0x00
+#define NO_CLOCK    0x00
 #define DIV1        0x11
 #define DIV8        0x22
 #define DIV32       0x30 
@@ -25,6 +25,12 @@
 #define OVF		0x01
 #define COMPA	0x02
 #define COMPB	0x04
+
+// compare output modes
+#define COMP_NONE		0x00
+#define COMP_TOGGLE		0x01
+#define COMP_CLEAR		0x02
+#define COMP_SET		0x03
 
 
 /* =========================================================
@@ -118,7 +124,17 @@ private:
 class timer0 {
 public:
 
-    timer0& normal__() {
+    timer0& clear() {
+        TCCR0A = 0;
+        TCCR0B = 0;
+        TCNT0  = 0;
+        TIMSK0 = 0;
+        OCR0A  = 0;
+        OCR0B  = 0;
+        return *this;
+    }
+
+    timer0& normal() {
         TCCR0A = TCCR0A & ~0x03;
         return *this;
     }
@@ -153,17 +169,17 @@ public:
         return *this;
     }
 
-    timer0& __events(uint8_t i = 0) {
+    timer0& events(uint8_t i = 0) {
         TIMSK0 = i;
         return *this;
     }
 
-    timer0& outputModeA(uint8_t m) {
+    timer0& onCompareA(uint8_t m) {
         TCCR0A = (TCCR0A & ~0xC0) | (m << 6);
         return *this;
     }
 
-    timer0& outputModeB(uint8_t m) {
+    timer0& onCompareB(uint8_t m) {
         TCCR0A = (TCCR0A & ~0x30) | (m << 4);
         return *this;
     }
@@ -180,6 +196,18 @@ public:
         TCCR0B &= ~0x07;
         TIMSK0 = 0;
     }
+
+    // legacy
+    void writeA(uint8_t v) {
+        OCR0A = v;
+        return *this;
+    }
+
+    void writeB(uint8_t v) {
+        OCR0B = v;
+        return *this;
+    }
+
 
 private:
     uint8_t _clkBits;
