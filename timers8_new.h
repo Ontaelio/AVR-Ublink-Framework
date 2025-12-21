@@ -32,89 +32,44 @@
 #define COMP_CLEAR		0x02
 #define COMP_SET		0x03
 
+// general functions (sync)
+inline void syncTimers(uint8_t c) {GTCCR = 0x80; GTCCR |= c;} // c is 1 for timers 0 and 1 or 3 for all three
+inline void syncStart() {GTCCR &= ~0x80;}
+
+
+struct Timer8Config {
+    uint8_t mode;
+    uint8_t compA;
+    uint8_t compB;
+    uint8_t prescaler;
+    uint8_t events;
+    uint8_t onCompareA;
+    uint8_t onCompareB;
+};
 
 /* =========================================================
  *  Timer8Profile
- * ========================================================= 
+ * ========================================================= */
 
 class Timer8Profile {
 public:
     Timer8Profile();
-
-    // setters
-
-    Timer8Profile& Timer8Profile::normal() {
-        _mode = 0b000;
-        return *this;
-    }
-
-    Timer8Profile& Timer8Profile::ctc(uint8_t t) {
-        _mode = 0b010;
-        _compA  = t;
-        return *this;
-    }
-
-    Timer8Profile& Timer8Profile::fastPWM(uint8_t t = 0) {
-        _mode = 0b011;        
-        _compA  = t;
-        return *this;
-    }
-
-    Timer8Profile& Timer8Profile::phaseCorrectPWM(uint8_t t = 0) {
-        _mode = 0b001;
-        _compA  = t;
-        return *this;
-    }
-
-    Timer8Profile& Timer8Profile::prescaler(uint8_t div) {
-        _prescaler = div;
-        return *this;
-    }
-
-    Timer8Profile& Timer8Profile::compA(uint8_t v) {
-        _compA = v;
-        return *this;
-    }
-
-    Timer8Profile& Timer8Profile::compB(uint8_t v) {
-        _compB = v;
-        return *this;
-    }
-
-    Timer8Profile& Timer8Profile::events(uint8_t i) {
-        _ints = i;
-        return *this;
-    }
-
-    Timer8Profile& Timer8Profile::ocMode(uint8_t o) {
-        _ocm = o;
-        return *this;
-    }
-
-    // getters
-/*
-    Timer8Profile::Mode Timer8Profile::mode() const    { return _mode; }
-    uint8_t Timer8Profile::top() const                 { return _compA; }
-    uint8_t Timer8Profile::compA() const               { return _compA; }
-    uint8_t Timer8Profile::compB() const               { return _compB; }
-    uint8_t Timer8Profile::prescaler() const           { return _prescaler; }
-    uint8_t Timer8Profile::events() const              { return _ints; }  
-    uint8_t Timer8Profile::compAmode() const           { return _ocm >> 6; }
-    uint8_t Timer8Profile::compBmode() const           { return (_ocm >> 4) & 0x03; }
-
+    Timer8Profile& Timer8Profile::normal();
+    Timer8Profile& Timer8Profile::ctc(uint8_t t);
+    Timer8Profile& Timer8Profile::fastPWM();
+    Timer8Profile& Timer8Profile::fastPWM(uint8_t t);
+    Timer8Profile& Timer8Profile::phaseCorrectPWM();
+    Timer8Profile& Timer8Profile::phaseCorrectPWM(uint8_t t);
+    Timer8Profile& Timer8Profile::prescaler(uint8_t div);
+    Timer8Profile& Timer8Profile::compA(uint8_t v);
+    Timer8Profile& Timer8Profile::compB(uint8_t v);
+    Timer8Profile& Timer8Profile::events(uint8_t i);
+    Timer8Profile& Timer8Profile::onCompareA(uint8_t o);
+    Timer8Profile& Timer8Profile::onCompareB(uint8_t o);
 
 private:
-
-    uint8_t _mode;
-    uint8_t _compA;
-    uint8_t _compB;
-    uint8_t _prescaler;
-    uint8_t _ints;
-    uint8_t _ocm;
-
+    Timer8Config cfg;    
     friend class timer0;
- 
-    //uint8_t tccra, tccrb, ocra, timsk;
 };
 
 /* =========================================================
@@ -194,18 +149,26 @@ public:
         return *this;
     }
 
-    inline void start(uint8_t ps = 1) {
-        TCCR0B = (TCCR0B & ~0x07) | ps;
+    timer0& prescaler(uint8_t ps) {
+        _clkBits = ps;
+        return *this;
     }
 
-    inline void stop() {
-        TCCR0B &= ~0x07;
-    }
+    inline void start(uint8_t ps) {TCCR0B = (TCCR0B & ~0x07) | ps;}
+    inline void start() {TCCR0B = (TCCR0B & ~0x07) | _clkBits;}
+    inline void stop() {TCCR0B &= ~0x07;}
+    void disable() {TCCR0B &= ~0x07; TIMSK0 = 0;}
 
-    void disable() {
-        TCCR0B &= ~0x07;
-        TIMSK0 = 0;
-    }
+    uint8_t read() {return TCNT0;}
+	operator uint8_t() {return read();}
+	timer0& write(uint8_t val) {TCNT0 = val; return *this;}
+	timer0& operator= (const uint8_t& val) {write(val); return *this;}
+
+    void forceCompareA() {TCCR0B |= 1 << FOC0A;}
+    void forceCompareB() {TCCR0B |= 1 << FOC0B;}
+
+    void timer0::config(const Timer8Config& cfg);
+    void timer0::profile(const Timer8Profile& p);
 
     // legacy
     void writeA(uint8_t v) {OCR0A = v; return *this;}
@@ -219,7 +182,7 @@ public:
 
 
 private:
-    uint8_t _clkBits;
+    uint8_t _clkBits = 1;
 };
 
 #endif // TIMER8_H
