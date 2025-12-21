@@ -145,16 +145,26 @@ public:
         return *this;
     }
 
-    timer0& fastPWM(uint8_t top = 0) {
+    timer0& fastPWM() {
         TCCR0A = (TCCR0A & ~0x03) | 0b011;
-        TCCR0B = (TCCR0B & ~0x08) | bool(top) << 3;
+        return *this;
+    }
+    
+    timer0& fastPWM(uint8_t top) {
+        TCCR0A = (TCCR0A & ~0x03) | 0b011;
+        TCCR0B |= 1 << 3;
         OCR0A = top;
         return *this;
     }
 
-    timer0& phaseCorrectPWM(uint8_t top = 0) {
+    timer0& phaseCorrectPWM() {
         TCCR0A = (TCCR0A & ~0x03) | 0b001;
-        TCCR0B = (TCCR0B & ~0x08) | bool(top) << 3;
+        return *this;
+    }
+    
+    timer0& phaseCorrectPWM(uint8_t top) {
+        TCCR0A = (TCCR0A & ~0x03) | 0b001;
+        TCCR0B |= 1 << 3;
         OCR0A = top;
         return *this;
     }
@@ -198,15 +208,14 @@ public:
     }
 
     // legacy
-    void writeA(uint8_t v) {
-        OCR0A = v;
-        return *this;
-    }
-
-    void writeB(uint8_t v) {
-        OCR0B = v;
-        return *this;
-    }
+    void writeA(uint8_t v) {OCR0A = v; return *this;}
+    void writeB(uint8_t v) {OCR0B = v; return *this;}
+    void OVFenable() {TIMSK0 |= 1;}
+	void COMPAenable() {TIMSK0 |= 2;}
+	void COMPBenable() {TIMSK0 |= 4;}
+	void OVFdisable() {TIMSK0 &= ~1;}
+	void COMPAdisable() {TIMSK0 &= ~2;}
+	void COMPBdisable() {TIMSK0 &= ~4;}
 
 
 private:
