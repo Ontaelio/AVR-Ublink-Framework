@@ -41,6 +41,7 @@ private:
 
 public:
   digitalPin(uint8_t* prt, uint8_t pn, uint8_t mode);
+  digitalPin(volatile uint8_t& prt, uint8_t pn, uint8_t mode);
   void high();
   void set();
   void low();

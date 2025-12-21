@@ -11,9 +11,13 @@
  
 #include <avr_gpio.h>
 
-  digitalPin::digitalPin(uint8_t* prt, uint8_t pn, uint8_t mode)
+  digitalPin::digitalPin(volatile uint8_t& prt, uint8_t pn, uint8_t mode)
+//    : digitalPin((uint8_t*)&prt, pn, mode)
+//  {}
+//
+//  digitalPin::digitalPin(uint8_t* prt, uint8_t pn, uint8_t mode)
     {pinnum = pn;
-     portx = prt;
+     portx = (uint8_t*)&prt;
      *portx |= ((mode >> 1) & 1) << pinnum;
      uint8_t* adr = portx - 1;
      *adr |= (mode & 1) << pinnum;
