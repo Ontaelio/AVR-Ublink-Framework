@@ -314,3 +314,4 @@ This library intentionally does **not** provide:
 [add license here]
 
 
+Creating more than one instance of the same timer results in undefined behavior.
