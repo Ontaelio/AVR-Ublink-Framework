@@ -90,22 +90,12 @@
   void digitalPin::externalIRQ(uint8_t c) //two pins with INT
 	{
 		if ((portx == &PORTD) && (pinnum == 2)) //INT0
-			if (c)
-			{
-				EICRA &= ~3; // clear
-				EICRA |= c & 3; // set
-				EIMSK |= 1; // enable
-			}
-			else EIMSK &= ~1; // disable
-		
+			EICRA = (EICRA & ~0x03) | (c & 3); // clear and set
+			EIMSK = (EIMSK & ~1) | (c >> 2); // enable / disable
+			
 		if ((portx == &PORTD) && (pinnum == 3)) //INT1
-			if (c)
-			{
-				EICRA &= ~12; // clear
-				EICRA |= (c & 3) << 2; // set
-				EIMSK |= 2; // enable
-			}
-			else EIMSK &= ~2; // disable
+			EICRA = (EICRA & ~0x0C) | (c << 2); // clear and set
+			EIMSK = (EIMSK & ~2) | (c & 4) << 1; // enable / disable
 	}
 
 
@@ -223,18 +213,7 @@
   {
 	  *ocr = ~val;
   }
-	  
-  //void enable();
-  //void disable();
 
-void setInt0(uint8_t val)
-{
-	EICRA &= ~3; //clear
-	EICRA |= val;
-}
-void setInt1(uint8_t val)
-{
-	EICRA &= ~12; //clear
-	EICRA |= val << 2;
-}
+
+
 

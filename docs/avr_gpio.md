@@ -3,9 +3,9 @@
 
 ## Digital pins
 
-Class **digitalPin**(uint8_t* prt, uint8_t pn, uint8_t mode)\
+Class **digitalPin**(volatile uint8_t& prt, uint8_t pn, uint8_t mode)\
 This class is used to create an object representing a single digital pin. Parameters are:\
-int8_t* **prt**: a _pointer_ to the port name. Use & with the name, e.g. `&PORTD`;\
+int8_t& **prt**: port name, e.g. `PORTD`;\
 uint8_t **pn**: pin number;\
 uint8_t **mode**: pin mode - OUTPUT, INPUT, INPUT_PULLUP.
 
@@ -18,7 +18,7 @@ Here's a cheatsheet of Arduino pin names and their port-pin actual representatio
 |A0..A5|PORTC|0..5|
 
 Thus, to set the Arduino pin 13 (built-in LED) to output use:\
-`digitalPin led(&PORTB, 5, OUTPUT)`.
+`digitalPin led(PORTB, 5, OUTPUT)`.
 
 -----
 
@@ -38,7 +38,15 @@ void **write**(uint8_t val): write 0 or 1 to pin configured as OUTPUT. Can be su
 
 void **pinChangeIRQ**(uint8_t c = 1): turn correcponding pin change interrupt (PCINT) on (c == 1) or off (c == 0).
 
-void **externalIRQ**(uint8_t c): turn corresponding INT interrupt on or off. INT0 is connected to pin 2 (PORTD 2) and INT1 to pin 3 (PORTD 3).
+void **externalIRQ**(uint8_t c): setup and turn corresponding INT interrupt on or off. INT0 is connected to pin 2 (PORTD 2) and INT1 to pin 3 (PORTD 3); this method works with these pins' instances only. `c` is three-bit and includes both the INT setup and its on/off bit; set it to **0** to turn the corresponding interrupt off. Use these macros for `c` (note that these values and names differ from the standalone INT functions macros):
+
+| macro | value | meaning |
+|-------|-|---|
+| PIN_LOW | 0b100 | Low level generates an interrupt request. |
+| PIN_CHANGE | 0b101 | Any logical change generates an interrupt request. |
+| PIN_FALLING | 0b110 | The falling edge generates an interrupt request. |
+| PIN_RISING | 0b111 | The rising edge generates an interrupt request. |
+
 
 ## Digital pins standalone functions
 
@@ -50,9 +58,9 @@ void **pinChangeCdisable()**\
 void **pinChangeDdisable()**\
 Enable/disable pin change interrupt on ports B, C, D.
 
-void **pinChamgeBmask**(uint8_t mask)\
-void **pinChamgeCmask**(uint8_t mask)\
-void **pinChamgeDmask**(uint8_t mask)\
+void **pinChangeBmask**(uint8_t mask)\
+void **pinChangeCmask**(uint8_t mask)\
+void **pinChangeDmask**(uint8_t mask)\
 Each bit of the `mask` selects whether pin change interrupt is enabled on the corresponding pin:
 
 |bits:|7|6|5|4|3|2|1|0|
@@ -61,16 +69,22 @@ Each bit of the `mask` selects whether pin change interrupt is enabled on the co
 |C|-|PCINT14|PCINT13|PCINT12|PCINT11|PCINT10|PCINT9|PCINT8|
 |D|PCINT23|PCINT22|PCINT21|PCINT20|PCINT19|PCINT18|PCINT17|PCINT16|
 
-void **setInt0**(uint8_t val)\
-void **setInt1**(uint8_t val)\
-Sets level and edges for External Interrupts INT0 and INT1. The following values should be used here:
+void **int0setup**(uint8_t val)\
+void **int1setup**(uint8_t val)\
+Sets level and edges for External Interrupts INT0 and INT1. The following macros/values should be used here:
 
-| val | meaning |
-|-------|----|
-| INT_LOW | Low level generates an interrupt request. |
-| INT_ANY | Any logical change generates an interrupt request. |
-| INT_FALLING | The falling edge generates an interrupt request. |
-| INT_RISING | The rising edge generates an interrupt request. |
+| macro | value | meaning |
+|-------|-|---|
+| INT_LOW | 0b00 | Low level generates an interrupt request. |
+| INT_CHANGE | 0b01 | Any logical change generates an interrupt request. |
+| INT_FALLING | 0b10 | The falling edge generates an interrupt request. |
+| INT_RISING | 0b11 | The rising edge generates an interrupt request. |
+
+void **int0enable**()\
+void **int1enable**()\
+void **int0disable**()\
+void **int1disable**()\
+Enable/disable INT0 and INT1 external interrupts.
 
 void **pullupDisable()**\
 void **pullupEnable()**\

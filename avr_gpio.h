@@ -4,7 +4,7 @@
  *
  * Documentation available in the provided MD file.
  *
- * (c) 2021 Dmitry Reznikov ontaelio(at)gmail.com
+ * (c) 2021-... Dmitry Reznikov ontaelio(at)gmail.com
  *
  * Can be freely used according to the GNU GPL license.
  */
@@ -14,23 +14,11 @@
 
 #include <stdint.h>
 #include <avr/io.h>
+#include <macros.h>
 
-#ifndef INPUT
-#define INPUT 0x0
-#endif
-
-#ifndef OUTPUT
-#define OUTPUT 0x1
-#endif
-
-#ifndef INPUT_PULLUP
-#define INPUT_PULLUP 0x2
-#endif
-
-#define PIN_LOW		0x4
-#define PIN_CHANGE	0x5
-#define PIN_RISING	0x6
-#define PIN_FALLING	0x7
+/* ===================================================
+ * Digital Pins
+ * =================================================== */
 
 class digitalPin
 {
@@ -58,17 +46,9 @@ public:
   digitalPin& operator= (const uint8_t& a) {write(a); return *this;}
 };
 
-#define ADCPS128	0x7
-#define ADCPS64		0x6
-#define ADCPS32		0x5
-#define ADCPS16		0x4
-#define ADCPS8		0x3
-#define ADCPS4		0x2
-#define ADCPS2		0x1
-
-#define ADC_AREF	0x0
-#define ADC_AVCC	0x1
-#define ADC_INT1V	0x3
+/* ===================================================
+ * Analog Pins
+ * =================================================== */
 
 class analogPin
 {
@@ -88,20 +68,9 @@ public:
 	operator uint16_t() {return check();}
 };
 
-#define PIN6	2
-#define PIND6	2
-#define PIN5	3
-#define PIND5	3
-
-#define PIN9	4
-#define PINB1	4
-#define PIN10	5
-#define PINB2	5
-
-#define PIN11	8
-#define PINB3	8
-#define PIN3	9
-#define PIND3	9
+/* ===================================================
+ * PWM Pins
+ * =================================================== */
 
 class pwmPin
 {
@@ -113,8 +82,6 @@ public:
 	pwmPin(uint8_t pn);
 	void init();
 	void write(uint8_t val);
-	//void enable();
-	//void disable();
 	
 	operator uint8_t() {return ~(*ocr);}
 	pwmPin& operator= (const uint8_t& a) {write(a); return *this;}
@@ -126,12 +93,9 @@ public:
 	pwmPin& operator-= (const uint16_t& a) {write (~(*ocr) - a); return *this;}
 };
 
-/* digital pin standalone functions */
-
-#define INT_LOW 0
-#define INT_ANY 1
-#define INT_FALLING 2
-#define INT_RISING 3
+/* ===================================================
+ * Digital Pins Standalone Functions
+ * =================================================== */
 
 /* pin change interrupts */
 inline void pinChangeBenable() {PCICR |= (1 << PCIE0);}
@@ -153,8 +117,8 @@ inline void int0disable() {EIMSK &= ~1;}
 inline void int1disable() {EIMSK &= ~2;}
 
 /* external interrupt triggers, pins D2 (INT0) and D3 (INT1) */
-void setInt0(uint8_t val);
-void setInt1(uint8_t val);
+inline void int0setup(uint8_t val) {EICRA = (EICRA & ~0x03) | val;} //clear and set	
+inline void int1setup(uint8_t val) {EICRA = (EICRA & ~0x0C) | (val << 2);} //clear and set
 
 /* built-in pull-up disable*/
 inline void pullupDisable() {MCUCR |= 1<<PUD;}
