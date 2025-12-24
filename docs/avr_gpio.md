@@ -47,6 +47,8 @@ void **externalIRQ**(uint8_t c): setup and turn corresponding INT interrupt on o
 | PIN_FALLING | 0b110 | The falling edge generates an interrupt request. |
 | PIN_RISING | 0b111 | The rising edge generates an interrupt request. |
 
+*Note: `externalIRQ` method duplicates the standalone functions described below. Choose one approach and stick to it to avoid confusion*
+
 
 ## Digital pins standalone functions
 
@@ -85,6 +87,8 @@ void **int1enable**()\
 void **int0disable**()\
 void **int1disable**()\
 Enable/disable INT0 and INT1 external interrupts.
+
+*Note: `int` functions duplicate the `externalIRQ` method above, but have lesser footprint.*
 
 void **pullupDisable()**\
 void **pullupEnable()**\

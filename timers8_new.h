@@ -4,37 +4,9 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <avr/io.h>
-
-/* =========================================================
- *  Defines
- * ========================================================= */
-
-// prescalers, right 4 bits for timer 2, left 4 bits for timers 0 and 1
-#define NO_CLOCK    0x00
-#define DIV1        0x11
-#define DIV8        0x22
-#define DIV32       0x30 
-#define DIV64       0x43
-#define DIV128      0x50 
-#define DIV256      0x64
-#define DIV1024     0x75
-#define EXT_FALLING	0x06
-#define EXT_RISING	0x07
-
-// interrupts
-#define OVF		0x01
-#define COMPA	0x02
-#define COMPB	0x04
-
-// compare output modes
-#define COMP_NONE		0x00
-#define COMP_TOGGLE		0x01
-#define COMP_CLEAR		0x02
-#define COMP_SET		0x03
+#include <macros.h>
 
 // general functions (sync)
-#define SYNC_TWO    0x01
-#define SYNC_THREE  0x03
 inline void syncTimers(uint8_t c) {GTCCR = 0x80; GTCCR |= c;} // c is 1 for timers 0 and 1 or 3 for all three
 inline void syncStart() {GTCCR &= ~0x80;}
 
