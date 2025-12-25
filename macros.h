@@ -63,7 +63,7 @@
 
 
 /* =========================================================
- *  Timer8
+ *  Timers
  * ========================================================= */
 
 // prescalers, right 4 bits for timer 2, left 4 bits for timers 0 and 1
@@ -82,12 +82,17 @@
 #define OVF		0x01
 #define COMPA	0x02
 #define COMPB	0x04
+#define INCAPT  0x20
 
 // compare output modes
 #define COMP_NONE		0x00
 #define COMP_TOGGLE		0x01
 #define COMP_CLEAR		0x02
 #define COMP_SET		0x03
+
+// input capture
+#define INPUT_FALLING   0x00
+#define INPUT_RISING    0x01
 
 // general functions (sync)
 #define SYNC_TWO    0x01
