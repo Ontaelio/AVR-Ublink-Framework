@@ -6,6 +6,9 @@
 #include <avr/io.h>
 #include <macros.h>
 
+// atomic wrapper for debugging
+#define TIMER1_ATOMIC(code) \
+  do { uint8_t s=SREG; cli(); code; SREG=s; } while(0)
 
 /* =========================================================
  *  Timer16Config
@@ -22,7 +25,6 @@ struct Timer16Config {
     uint16_t inputCapture;
     uint8_t  inputCfg;
 };
-
 
 /* =========================================================
  *  Timer16Profile
@@ -53,8 +55,8 @@ public:
     Timer16Profile& Timer16Profile::phaseFrequencyPWM16();
 
     Timer16Profile& Timer16Profile::prescaler(uint8_t div);
-    Timer16Profile& Timer16Profile::compA(uint8_t v);
-    Timer16Profile& Timer16Profile::compB(uint8_t v);
+    Timer16Profile& Timer16Profile::compA(uint16_t v);
+    Timer16Profile& Timer16Profile::compB(uint16_t v);
     Timer16Profile& Timer16Profile::events(uint8_t i);
     Timer16Profile& Timer16Profile::onCompareA(uint8_t o);
     Timer16Profile& Timer16Profile::onCompareB(uint8_t o);
@@ -281,8 +283,8 @@ public:
     void forceCompareA() {TCCR1C |= 1 << FOC1A;}
     void forceCompareB() {TCCR1C |= 1 << FOC1B;}
 
-    void timer1::config(const Timer8Config& cfg);
-    void timer1::profile(const Timer8Profile& p);
+    void timer1::config(const Timer16Config& cfg);
+    void timer1::profile(const Timer16Profile& p);
 
 }
 
