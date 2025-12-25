@@ -65,41 +65,7 @@ public:
 	void IRQenable(uint8_t irqs) {UCSR0B |= irqs;}
 	void IRQdisable(uint8_t irqs) {UCSR0B &= ~irqs;}
 	
-/*	void CLKenable(uint8_t cpol = 0, uint8_t cpha = 0, uint8_t lbcl = 0)
-		{_USART1_(USART_CR2) |= USART_CR2_CLKEN | (cpha << 9) | (cpol << 10) | (lbcl << 8);}
-	void CLKdisable() {_USART1_(USART_CR2) &= ~(USART_CR2_CLKEN | 0x0700);}
-	void RTSenable() {_USART1_(USART_CR3) |= USART_CR3_RTSE;}
-	void RTSdisable() {_USART1_(USART_CR3) &= ~USART_CR3_RTSE;}
-	void CTSenable() {_USART1_(USART_CR3) |= USART_CR3_CTSE;}
-	void CTSdisable() {_USART1_(USART_CR3) &= ~USART_CR3_CTSE;}
-	void HDenable() {_USART1_(USART_CR3) |= USART_CR3_HDSEL;}
-	void HDdisable() {_USART1_(USART_CR3) &= ~USART_CR3_HDSEL;}
-	void DMARXenable() {_USART1_(USART_CR3) |= USART_CR3_DMAR;}
-	void DMARXdisable() {_USART1_(USART_CR3) &= ~USART_CR3_DMAR;}
-	void DMATXenable() {_USART1_(USART_CR3) |= USART_CR3_DMAT;}
-	void DMATXdisable() {_USART1_(USART_CR3) &= ~USART_CR3_DMAT;}
-	void sendBreak() {_USART1_(USART_CR1) |= USART_CR1_SBK;}
 
-	void wordLength(uint8_t M) {BB_USART1_CR1_M = M&0x01;}
-	void stopBits(uint8_t stp) {_USART1_(USART_CR2) &= ~USART_CR2_STOP; _USART1_(USART_CR2) |= stp << 12;}
-	void parityEnable(uint8_t ps) {_USART1_(USART_CR1) |= USART_CR1_PCE | (ps<<9);}
-	void parityDisable() {_USART1_(USART_CR1) &= ~(USART_CR1_PCE | USART_CR1_PS);}
-
-
-
-	void clearCTS() {_USART1_(USART_SR) &= ~USART_SR_CTS;}
-	uint16_t checkError() {return (_USART1_(USART_SR) & 0x001F);}
-	uint16_t checkIdle() {return (_USART1_(USART_SR) & 0x0010);}
-	uint16_t readDR() {return _USART1_(USART_DR);}
-
-	void sendStreamDMA(uint8_t* dat, uint16_t size);
-	void getStreamDMA(uint8_t* dat, uint16_t size);
-	void startTX(uint8_t* dat, uint16_t size, uint16_t pri = 0x1000);
-	void stopTX();
-	void startRX(uint8_t* dat, uint16_t size, uint16_t pri = 0x1000);
-	void stopRX();
-
-*/
 	friend usart& operator << (usart& out, const char* str);
 
 	friend usart& operator << (usart& out, const char ch);

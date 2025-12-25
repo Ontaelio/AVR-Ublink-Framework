@@ -1,7 +1,9 @@
 #ifndef UBLINK_MACROS_H_
 #define UBLINK_MACROS_H_
 
-// GPIO
+/* =========================================================
+ *  GPIO
+ * ========================================================= */
 
 #ifndef INPUT
 #define INPUT 0x0
