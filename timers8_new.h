@@ -31,18 +31,18 @@ struct Timer8Config {
 class Timer8Profile {
 public:
     Timer8Profile();
-    Timer8Profile& Timer8Profile::normal();
-    Timer8Profile& Timer8Profile::ctc(uint8_t t);
-    Timer8Profile& Timer8Profile::fastPWM();
-    Timer8Profile& Timer8Profile::fastPWM(uint8_t t);
-    Timer8Profile& Timer8Profile::phaseCorrectPWM();
-    Timer8Profile& Timer8Profile::phaseCorrectPWM(uint8_t t);
-    Timer8Profile& Timer8Profile::prescaler(uint8_t div);
-    Timer8Profile& Timer8Profile::compA(uint8_t v);
-    Timer8Profile& Timer8Profile::compB(uint8_t v);
-    Timer8Profile& Timer8Profile::events(uint8_t i);
-    Timer8Profile& Timer8Profile::onCompareA(uint8_t o);
-    Timer8Profile& Timer8Profile::onCompareB(uint8_t o);
+    Timer8Profile& normal();
+    Timer8Profile& ctc(uint8_t t);
+    Timer8Profile& fastPWM();
+    Timer8Profile& fastPWM(uint8_t t);
+    Timer8Profile& phaseCorrectPWM();
+    Timer8Profile& phaseCorrectPWM(uint8_t t);
+    Timer8Profile& prescaler(uint8_t div);
+    Timer8Profile& compA(uint8_t v);
+    Timer8Profile& compB(uint8_t v);
+    Timer8Profile& events(uint8_t i);
+    Timer8Profile& onCompareA(uint8_t o);
+    Timer8Profile& onCompareB(uint8_t o);
 
 private:
     Timer8Config cfg;    

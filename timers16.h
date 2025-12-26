@@ -10,6 +10,8 @@
 #define TIMER1_ATOMIC(code) \
   do { uint8_t s=SREG; cli(); code; SREG=s; } while(0)
 
+//class timer1;
+
 /* =========================================================
  *  Timer16Config
  * ========================================================= */
@@ -34,34 +36,34 @@ class Timer16Profile {
 public:
     Timer16Profile();
 
-    Timer16Profile& Timer16Profile::normal();
-    Timer16Profile& Timer16Profile::phaseCorrectPWM();
-    Timer16Profile& Timer16Profile::phaseCorrectPWM9();
-    Timer16Profile& Timer16Profile::phaseCorrectPWM10();
-    Timer16Profile& Timer16Profile::ctc(uint16_t t);
-    Timer16Profile& Timer16Profile::fastPWM();
-    Timer16Profile& Timer16Profile::fastPWM9();
-    Timer16Profile& Timer16Profile::fastPWM10();
-    Timer16Profile& Timer16Profile::phaseFrequencyPWMicr(uint16_t t);
-    Timer16Profile& Timer16Profile::phaseFrequencyPWM(uint16_t t);
-    Timer16Profile& Timer16Profile::phaseCorrectPWMicr(uint16_t t);
-    Timer16Profile& Timer16Profile::phaseCorrectPWM(uint16_t t);
-    Timer16Profile& Timer16Profile::ctcIcr(uint16_t t);
-    Timer16Profile& Timer16Profile::fastPWMicr(uint16_t t);    
-    Timer16Profile& Timer16Profile::fastPWM(uint16_t t);
+    Timer16Profile& normal();
+    Timer16Profile& phaseCorrectPWM();
+    Timer16Profile& phaseCorrectPWM9();
+    Timer16Profile& phaseCorrectPWM10();
+    Timer16Profile& ctc(uint16_t t);
+    Timer16Profile& fastPWM();
+    Timer16Profile& fastPWM9();
+    Timer16Profile& fastPWM10();
+    Timer16Profile& phaseFrequencyPWMicr(uint16_t t);
+    Timer16Profile& phaseFrequencyPWM(uint16_t t);
+    Timer16Profile& phaseCorrectPWMicr(uint16_t t);
+    Timer16Profile& phaseCorrectPWM(uint16_t t);
+    Timer16Profile& ctcIcr(uint16_t t);
+    Timer16Profile& fastPWMicr(uint16_t t);    
+    Timer16Profile& fastPWM(uint16_t t);
 
-    Timer16Profile& Timer16Profile::fastPWM16(); // convenience modes using ICR=0xFFFF as top
-    Timer16Profile& Timer16Profile::phaseCorrectPWM16();
-    Timer16Profile& Timer16Profile::phaseFrequencyPWM16();
+    Timer16Profile& fastPWM16(); // convenience modes using ICR=0xFFFF as top
+    Timer16Profile& phaseCorrectPWM16();
+    Timer16Profile& phaseFrequencyPWM16();
 
-    Timer16Profile& Timer16Profile::prescaler(uint8_t div);
-    Timer16Profile& Timer16Profile::compA(uint16_t v);
-    Timer16Profile& Timer16Profile::compB(uint16_t v);
-    Timer16Profile& Timer16Profile::events(uint8_t i);
-    Timer16Profile& Timer16Profile::onCompareA(uint8_t o);
-    Timer16Profile& Timer16Profile::onCompareB(uint8_t o);
-    Timer16Profile& Timer16Profile::inputEdge(uint8_t ie);
-    Timer16Profile& Timer16Profile::noiseCanceler(uint8_t nc);
+    Timer16Profile& prescaler(uint8_t div);
+    Timer16Profile& compA(uint16_t v);
+    Timer16Profile& compB(uint16_t v);
+    Timer16Profile& events(uint8_t i);
+    Timer16Profile& onCompareA(uint8_t o);
+    Timer16Profile& onCompareB(uint8_t o);
+    Timer16Profile& inputEdge(uint8_t ie);
+    Timer16Profile& noiseCanceler(uint8_t nc);
 
 private:
     Timer16Config cfg;    
@@ -70,7 +72,7 @@ private:
 
 
 /* =========================================================
- *  timer1_8bit — hardware 
+ *  timer1 — hardware 
  * ========================================================= */
 
 class timer1 {
@@ -89,7 +91,6 @@ public:
         // all reset
         TCCR1A = (TCCR1A & ~0x03);
         TCCR1B = (TCCR1B & ~0x18);
-        OCR1A = top;
         return *this;
     }
 
@@ -271,7 +272,7 @@ public:
     inline void stop() {TCCR1B &= ~0x07;}
     void disable() {TCCR1B &= ~0x07; TIMSK1 = 0;}
 
-    uint16_t readA() {return OCR1A;} // disable interrupts?
+    uint16_t readA() {return OCR1A;} // disable interrupts? NO
     uint16_t readB() {return OCR1B;}
     uint16_t inputCapture() {return ICR1;}
 
@@ -286,6 +287,10 @@ public:
     void timer1::config(const Timer16Config& cfg);
     void timer1::profile(const Timer16Profile& p);
 
-}
+
+private:
+    uint8_t _clkBits = 1;
+
+};
 
     #endif //TIMER16_H
