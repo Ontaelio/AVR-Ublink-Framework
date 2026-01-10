@@ -38,10 +38,11 @@ void **write**(uint8_t val): write 0 or 1 to pin configured as OUTPUT. Can be su
 
 void **pinChangeIRQ**(uint8_t c = 1): turn correcponding pin change interrupt (PCINT) on (c == 1) or off (c == 0).
 
-void **externalIRQ**(uint8_t c): setup and turn corresponding INT interrupt on or off. INT0 is connected to pin 2 (PORTD 2) and INT1 to pin 3 (PORTD 3); this method works with these pins' instances only. `c` is three-bit and includes both the INT setup and its on/off bit; set it to **0** to turn the corresponding interrupt off. Use these macros for `c` (note that these values and names differ from the standalone INT functions macros):
+void **externalIRQ**(uint8_t c): clear interrupt flag, setup and turn corresponding INT interrupt on or off. INT0 is connected to pin 2 (PORTD 2) and INT1 to pin 3 (PORTD 3); this method works with these pins' instances only. `c` is three-bit and includes both the INT setup and its on/off bit; set it to **0** to turn the corresponding interrupt off. Use these macros for `c` (note that these values and names differ from the standalone INT functions macros):
 
 | macro | value | meaning |
 |-------|-|---|
+| PIN_OFF |0b000  | Turn this INT off. |
 | PIN_LOW | 0b100 | Low level generates an interrupt request. |
 | PIN_CHANGE | 0b101 | Any logical change generates an interrupt request. |
 | PIN_FALLING | 0b110 | The falling edge generates an interrupt request. |
@@ -71,9 +72,14 @@ Each bit of the `mask` selects whether pin change interrupt is enabled on the co
 |C|-|PCINT14|PCINT13|PCINT12|PCINT11|PCINT10|PCINT9|PCINT8|
 |D|PCINT23|PCINT22|PCINT21|PCINT20|PCINT19|PCINT18|PCINT17|PCINT16|
 
+void **pinChangeBclear()**\
+void **pinChangeCclear()**\
+void **pinChangeDclear()**\
+Clears the corresponding Pin Change interrupt flag.
+
 void **int0setup**(uint8_t val)\
 void **int1setup**(uint8_t val)\
-Sets level and edges for External Interrupts INT0 and INT1. The following macros/values should be used here:
+Sets level and edges for External Interrupts INT0 (pin D2) and INT1 (pin D3). The following macros/values should be used here:
 
 | macro | value | meaning |
 |-------|-|---|
@@ -87,6 +93,10 @@ void **int1enable**()\
 void **int0disable**()\
 void **int1disable**()\
 Enable/disable INT0 and INT1 external interrupts.
+
+void **int0clear()**\
+void **int1clear()**\
+Clears the corresponding INT interrupt flag.
 
 *Note: `int` functions duplicate the `externalIRQ` method above, but have lesser footprint.*
 

@@ -90,10 +90,12 @@
   void digitalPin::externalIRQ(uint8_t c) //two pins with INT
 	{
 		if ((portx == &PORTD) && (pinnum == 2)) //INT0
+			EIFR |= (1 << INTF0);
 			EICRA = (EICRA & ~0x03) | (c & 3); // clear and set
 			EIMSK = (EIMSK & ~1) | (c >> 2); // enable / disable
 			
 		if ((portx == &PORTD) && (pinnum == 3)) //INT1
+			EIFR |= (1 << INTF1);
 			EICRA = (EICRA & ~0x0C) | (c << 2); // clear and set
 			EIMSK = (EIMSK & ~2) | (c & 4) << 1; // enable / disable
 	}

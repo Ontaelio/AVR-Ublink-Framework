@@ -110,19 +110,24 @@ inline void pinChangeBmask(uint8_t mask) {PCMSK0 = mask;}
 inline void pinChangeCmask(uint8_t mask) {PCMSK1 = mask;}
 inline void pinChangeDmask(uint8_t mask) {PCMSK2 = mask;}
 
+/* pin change flags clear */
+inline void pinChangeBclear() {PCIFR |= (1 << PCIF0);}
+inline void pinChangeCclear() {PCIFR |= (1 << PCIF1);}
+inline void pinChangeDclear() {PCIFR |= (1 << PCIF2);}
+
 /* enable external interrupts INT0 and INT1 */
 inline void int0enable() {EIFR  |=  (1 << INTF0); EIMSK |=  (1 << INT0);}
 inline void int1enable() {EIFR  |=  (1 << INTF1); EIMSK |=  (1 << INT1);;}
-inline void int0disable() {EIMSK &= ~1;}
-inline void int1disable() {EIMSK &= ~2;}
+inline void int0disable() {EIMSK &= ~(1 << INT0);}
+inline void int1disable() {EIMSK &= ~(1 << INT1);}
 
 /* external interrupt triggers, pins D2 (INT0) and D3 (INT1) */
 inline void int0setup(uint8_t val) {EICRA = (EICRA & ~0x03) | val;} //clear and set	
 inline void int1setup(uint8_t val) {EICRA = (EICRA & ~0x0C) | (val << 2);} //clear and set
 
 /* external interrupts flags clear*/
-inline void int0clear() {EIFR |= 1;}
-inline void int1clear() {EIFR |= 2;}
+inline void int0clear() {EIFR |= (1 << INTF0);}
+inline void int1clear() {EIFR |= (1 << INTF1);}
 
 /* built-in pull-up disable*/
 inline void pullupDisable() {MCUCR |= 1<<PUD;}
