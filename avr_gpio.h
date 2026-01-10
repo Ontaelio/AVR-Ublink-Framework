@@ -111,14 +111,20 @@ inline void pinChangeCmask(uint8_t mask) {PCMSK1 = mask;}
 inline void pinChangeDmask(uint8_t mask) {PCMSK2 = mask;}
 
 /* enable external interrupts INT0 and INT1 */
-inline void int0enable() {EIMSK |= 1;}
-inline void int1enable() {EIMSK |= 2;}
+inline void int0enable() {EIFR  |=  (1 << INTF0); EIMSK |=  (1 << INT0);}
+inline void int1enable() {EIFR  |=  (1 << INTF1); EIMSK |=  (1 << INT1);;}
 inline void int0disable() {EIMSK &= ~1;}
 inline void int1disable() {EIMSK &= ~2;}
 
 /* external interrupt triggers, pins D2 (INT0) and D3 (INT1) */
 inline void int0setup(uint8_t val) {EICRA = (EICRA & ~0x03) | val;} //clear and set	
 inline void int1setup(uint8_t val) {EICRA = (EICRA & ~0x0C) | (val << 2);} //clear and set
+
+/* external interrupts flags*/
+inline void int0clearFlag() {EIFR &= ~1;}
+inline void int1clearFlag() {EIFR &= ~2;}
+inline void int0setFlag() {EIFR |= 1;}
+inline void int1setFlag() {EIFR |= 2;}
 
 /* built-in pull-up disable*/
 inline void pullupDisable() {MCUCR |= 1<<PUD;}
