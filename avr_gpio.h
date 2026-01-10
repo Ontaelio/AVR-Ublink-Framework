@@ -120,11 +120,9 @@ inline void int1disable() {EIMSK &= ~2;}
 inline void int0setup(uint8_t val) {EICRA = (EICRA & ~0x03) | val;} //clear and set	
 inline void int1setup(uint8_t val) {EICRA = (EICRA & ~0x0C) | (val << 2);} //clear and set
 
-/* external interrupts flags*/
-inline void int0clearFlag() {EIFR &= ~1;}
-inline void int1clearFlag() {EIFR &= ~2;}
-inline void int0setFlag() {EIFR |= 1;}
-inline void int1setFlag() {EIFR |= 2;}
+/* external interrupts flags clear*/
+inline void int0clear() {EIFR |= 1;}
+inline void int1clear() {EIFR |= 2;}
 
 /* built-in pull-up disable*/
 inline void pullupDisable() {MCUCR |= 1<<PUD;}
