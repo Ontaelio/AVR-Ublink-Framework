@@ -1,6 +1,6 @@
 /*
  * Atmega328 USART functions header file
- * Part of Atmega328 register and peripherals library
+ * Part of Ublink Atmega328 register and peripherals framework
  *
  * Documentation available in the provided MD file.
  *

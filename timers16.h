@@ -1,4 +1,15 @@
-#ifndef TIMER16_H
+/*
+ * Atmega328 16-bit timer1 library header file
+* Part of Ublink Atmega328 register and peripherals framework
+ *
+ * Documentation available in the provided MD file.
+ *
+ * (c) 2021-... Dmitry Reznikov ontaelio(at)gmail.com
+ *
+ * Can be freely used according to the GNU GPL license.
+ */
+
+ #ifndef TIMER16_H
 #define TIMER16_H
 
 #include <stdint.h>
@@ -287,11 +298,11 @@ public:
     inline void stop() {TCCR1B &= ~0x07;}
     void disable() {TCCR1B &= ~0x07; TIMSK1 = 0;}
 
-    uint16_t readA() {return OCR1A;} // disable interrupts? NO
+    uint16_t readA() {return OCR1A;} 
     uint16_t readB() {return OCR1B;}
     uint16_t inputCapture() {return ICR1;}
 
-    uint16_t read() {return TCNT1;} // technically should disable interrupts for this, check 20.6 in datasheet
+    uint16_t read() {return TCNT1;} 
 	operator uint16_t() {return read();}
 	timer1& write(uint16_t val) {TCNT1 = val; return *this;}
 	timer1& operator= (const uint16_t& val) {write(val); return *this;}
@@ -299,8 +310,8 @@ public:
     void forceCompareA() {TCCR1C |= 1 << FOC1A;}
     void forceCompareB() {TCCR1C |= 1 << FOC1B;}
 
-    void timer1::config(const Timer16Config& cfg);
-    void timer1::profile(const Timer16Profile& p);
+    timer1& config(const Timer16Config& cfg);
+    timer1& profile(const Timer16Profile& p);
 
     static inline RegProxy16<OCR1A_reg> A;
     static inline RegProxy16<OCR1B_reg> B;

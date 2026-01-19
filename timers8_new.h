@@ -1,3 +1,14 @@
+/*
+ * Atmega328 8-bit timers library header file
+ * Part of Ublink Atmega328 register and peripherals framework
+ *
+ * Documentation available in the provided MD file.
+ *
+ * (c) 2021-... Dmitry Reznikov ontaelio(at)gmail.com
+ *
+ * Can be freely used according to the GNU GPL license.
+ */
+
 #ifndef TIMER8_H
 #define TIMER8_H
 

@@ -1,6 +1,6 @@
 /*
- * Atmega328 Pin functions header file
- * Part of Atmega328 register and peripherals library
+ * Atmega328 Pin library header file
+ * Part of Ublink Atmega328 register and peripherals framework
  *
  * Documentation available in the provided MD file.
  *

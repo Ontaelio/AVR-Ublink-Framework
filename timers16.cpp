@@ -181,8 +181,7 @@ Timer16Profile& Timer16Profile::noiseCanceler(uint8_t nc) {
 // WGM12 - TCCR1B #3 (0x08)
 // WGM13 - TCCR1B #4 (0x10)
 
-__attribute__((always_inline))
-inline void timer1::config(const Timer16Config& cfg) {
+timer1& timer1::config(const Timer16Config& cfg) {
     timer1::clear();
 
     TCCR1A = (cfg.mode & 0x03) | (cfg.onCompareA << 6) | (cfg.onCompareB << 4);
@@ -194,8 +193,9 @@ inline void timer1::config(const Timer16Config& cfg) {
 
     // these will be used in start()
     _clkBits = cfg.prescaler & 0x0F;
+    return *this;
 }
 
-inline void timer1::profile(const Timer16Profile& p) {
-    timer1::config(p.cfg);
+timer1& timer1::profile(const Timer16Profile& p) {
+    return timer1::config(p.cfg);
 }
