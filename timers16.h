@@ -5,12 +5,11 @@
 #include <stdlib.h>
 #include <avr/io.h>
 #include <macros.h>
+#include <utils.h>
 
 // atomic wrapper for debugging
 #define TIMER1_ATOMIC(code) \
   do { uint8_t s=SREG; cli(); code; SREG=s; } while(0)
-
-//class timer1;
 
 /* =========================================================
  *  Timer16Config
@@ -76,6 +75,22 @@ private:
  * ========================================================= */
 
 class timer1 {
+private:
+    uint8_t _clkBits = 1;
+
+    // Timer1 output compare register accessors
+    struct OCR1A_reg {
+        static inline volatile uint16_t& ref() {
+            return OCR1A;
+        }
+    };
+
+    struct OCR1B_reg {
+        static inline volatile uint16_t& ref() {
+            return OCR1B;
+    }
+    };
+
 public:
 
     // WGM10 - TCCR1A #0 (0x01)
@@ -287,9 +302,8 @@ public:
     void timer1::config(const Timer16Config& cfg);
     void timer1::profile(const Timer16Profile& p);
 
-
-private:
-    uint8_t _clkBits = 1;
+    static inline RegProxy16<OCR1A_reg> A;
+    static inline RegProxy16<OCR1B_reg> B;
 
 };
 
