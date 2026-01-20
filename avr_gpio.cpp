@@ -205,14 +205,12 @@
 		  default: break;
 	  }
 	  
-	  // fast PWM
-	  if (pinnum&4) {*tccra = (*tccra & ~0x18) | 1<<WGM10; *(tccra+1) = 1<<WGM12;} // fast PWM, special for timer1
-	  	else  *tccra = (*tccra & ~0x18) | (1<<WGM01) | (1<<WGM00);
+	  // phaseCorrect
+	  *tccra = (*tccra & ~0x03) | (1<<WGM00); 
 	  // clear on compare
 	  if (pinnum&1) *tccra |= (1<<COM0B1); else *tccra |= (1<<COM0A1); 
-	  // prescaler 64 
-	  if (pinnum&8) *(tccra+1) = (*(tccra+1) & ~0x07) | (1<<CS22); // prescaler 64, special for timer 2
-	  	else *(tccra+1) = (*(tccra+1) & ~0x07) | (1<<CS01) | (1<<CS00); 
+	  // prescaler 64 (32 for Timer2)
+	  *(tccra+1) = (*(tccra+1) & ~0x07) | (1<<CS01) | (1<<CS00); 
 	  
   }
   
@@ -254,14 +252,17 @@
 		  default: break;
 	  }
 	 
-	  // fast PWM
-	  if (pinnum&4) {*tccra = (*tccra & ~0x18) | 1<<WGM10; *(tccra+1) = 1<<WGM12;} // fast PWM, special for timer1
-	  	else  *tccra = (*tccra & ~0x18) | (1<<WGM01) | (1<<WGM00);
-	  // clear on compare
-	  if (pinnum&1) *tccra |= (1<<COM0B1); else *tccra |= (1<<COM0A1); 
-	  // prescaler 64 
-	  if (pinnum&8) *(tccra+1) = (*(tccra+1) & ~0x07) | (1<<CS22); // prescaler 64, special for timer 2
-	  	else *(tccra+1) = (*(tccra+1) & ~0x07) | (1<<CS01) | (1<<CS00); 
+	  // fast PWM - bad for pin application due to spikes
+	  //if (pinnum&4) {*tccra = (*tccra & ~0x03) | 1<<WGM10; *(tccra+1) = 1<<WGM12;} // fast PWM, special for timer1
+	  //	else  *tccra = (*tccra & ~0x03) | (1<<WGM01) | (1<<WGM00);
+	  
+	  // phaseCorrect
+	  *tccra = (*tccra & ~0x03) | (1<<WGM00); 
+	  // set on compare
+	  if (pinnum&1) *tccra |= (1<<COM0B1) | (1<<COM0B0); else *tccra |= (1<<COM0A1) | (1<<COM0A0); 
+	  // prescaler 64 (~490 Hz, maybe 8 is better for phase correct, but this is Arduino default)
+	  // 32 for Timer 2 (again, as on Arduino)
+	  *(tccra+1) = (*(tccra+1) & ~0x07) | (1<<CS01) | (1<<CS00); 
   }
   
 

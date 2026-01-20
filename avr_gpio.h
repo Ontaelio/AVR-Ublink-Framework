@@ -103,17 +103,29 @@ private:
 public:
 	pwmPinInv(uint8_t pn);
 	void init();
-	inline void write(uint8_t val) {*ocr = ~val;} // invert value, not hardware
+	// inline void write(uint8_t val) {*ocr = ~val;} // invert value, not hardware
 	
-	operator uint8_t() {return ~(*ocr);}
+	// operator uint8_t() {return ~(*ocr);}
+	// pwmPinInv& operator= (const uint8_t& a) {write(a); return *this;}
+	// pwmPinInv& operator++ () {write (~(*ocr) + 1); return *this;} // prefix
+	// uint8_t operator++ (int) {uint8_t old = *ocr; *ocr = (old - 1); return (~old);} // postfix inverted
+	// pwmPinInv& operator-- () {write (~(*ocr) - 1); return *this;}
+	// uint8_t operator-- (int) {uint8_t old = *ocr; *ocr = (old + 1); return (~old);}
+	// pwmPinInv& operator+= (const uint16_t& a) {write (~(*ocr) + a); return *this;}
+	// pwmPinInv& operator-= (const uint16_t& a) {write (~(*ocr) - a); return *this;}
+
+	void write(uint8_t val) {*ocr = val;}
+	
+	operator uint8_t() {return (*ocr);}
 	pwmPinInv& operator= (const uint8_t& a) {write(a); return *this;}
-	pwmPinInv& operator++ () {write (~(*ocr) + 1); return *this;} // prefix
-	uint8_t operator++ (int) {uint8_t old = *ocr; *ocr = (old - 1); return (~old);} // postfix inverted
-	pwmPinInv& operator-- () {write (~(*ocr) - 1); return *this;}
-	uint8_t operator-- (int) {uint8_t old = *ocr; *ocr = (old + 1); return (~old);}
-	pwmPinInv& operator+= (const uint16_t& a) {write (~(*ocr) + a); return *this;}
-	pwmPinInv& operator-= (const uint16_t& a) {write (~(*ocr) - a); return *this;}
+	pwmPinInv& operator++ () {write ((*ocr) + 1); return *this;} // prefix
+	uint8_t operator++ (int) {uint8_t old = *ocr; write (old + 1); return old;} // postfix
+	pwmPinInv& operator-- () {write ((*ocr) - 1); return *this;}
+	uint8_t operator-- (int) {uint8_t old = *ocr; write (old - 1); return old;}
+	pwmPinInv& operator+= (const uint16_t& a) {write ((*ocr) + a); return *this;}
+	pwmPinInv& operator-= (const uint16_t& a) {write ((*ocr) - a); return *this;}
 };
+
 
 /* ===================================================
  * Digital Pins Standalone Functions
