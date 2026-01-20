@@ -315,4 +315,4 @@ This library intentionally does **not** provide:
 
 
 Creating more than one instance of the same timer results in undefined behavior.
-Normal mode is intentionally unavailable in 8-bit compatibility mode.
+Timer 1 Normal mode is intentionally unavailable in 8-bit compatibility mode.

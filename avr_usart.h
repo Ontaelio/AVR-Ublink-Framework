@@ -1,5 +1,5 @@
 /*
- * Atmega328 USART functions header file
+ * Atmega328 USART library header file
  * Part of Ublink Atmega328 register and peripherals framework
  *
  * Documentation available in the provided MD file.
@@ -49,6 +49,7 @@ public:
 
 	void printFloat(long double a, uint_fast8_t s = 2);
 	void printHex(unsigned val);
+	void printBin(unsigned val);
 
 	char getChar();
 	void getStream(uint8_t* dat, uint16_t size);

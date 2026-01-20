@@ -69,11 +69,11 @@ public:
     Timer16Profile& prescaler(uint8_t div);
     Timer16Profile& compA(uint16_t v);
     Timer16Profile& compB(uint16_t v);
-    Timer16Profile& events(uint8_t i);
+    Timer16Profile& events(uint8_t i = 0);
     Timer16Profile& onCompareA(uint8_t o);
     Timer16Profile& onCompareB(uint8_t o);
     Timer16Profile& inputEdge(uint8_t ie);
-    Timer16Profile& noiseCanceler(uint8_t nc);
+    Timer16Profile& noiseCanceler(uint8_t nc = 1);
 
 private:
     Timer16Config cfg;    

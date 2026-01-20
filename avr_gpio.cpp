@@ -211,11 +211,50 @@
 	  
   }
   
-  void pwmPin::write(uint8_t val)
-  {
-	  *ocr = ~val;
-  }
+  /* PWM basic stuff inverted*/
+  pwmPinInv::pwmPinInv(uint8_t pn)
+   {
+		if (pn&2) // timer 0
+		{
+			tccra = &TCCR0A;
+			if (pn&1) ocr = &OCR0B; else ocr = &OCR0A;
+		}
+		
+		if (pn&4) // timer 1
+		{
+			tccra = &TCCR1A;
+			if (pn&1) ocr = &OCR1BL; else ocr = &OCR1AL;
+		}
+		
+		if (pn&8) // timer 2
+		{
+			tccra = &TCCR2A;
+			if (pn&1) ocr = &OCR2B; else ocr = &OCR2A;
+		}
+		pinnum = pn;
+		init();
+   }   
 
+   void pwmPinInv::init()
+  {
+	  switch (pinnum)
+	  {
+		  case 2: DDRD |= 1<<6; break;
+		  case 3: DDRD |= 1<<5; break;
+		  case 4: DDRB |= 1<<1; OCR1A = 0; break;
+		  case 5: DDRB |= 1<<2; OCR1B = 0; break;
+		  case 8: DDRB |= 1<<3; break;
+		  case 9: DDRD |= 1<<3; break;
+		  
+		  default: break;
+	  }
+	  if (pinnum&8) *(tccra+1) = (1<<CS22); else *(tccra+1) = (1<<CS01) | (1<<CS00); // prescaler 64, special for timer 2
+	  if (pinnum&4) {*tccra = 1<<WGM10; *(tccra+1) |= 1<<WGM12;} // fast PWM, special for timer1
+	  else  *tccra = (1<<WGM01) | (1<<WGM00);
+	  if (pinnum&1) *tccra |= (1<<COM0B1); else *tccra |= (1<<COM0A1); // clear on compare match
+	  
+  }
+  
 
 
 

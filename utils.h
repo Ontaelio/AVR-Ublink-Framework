@@ -5,7 +5,7 @@
 #include <avr/io.h>
 
 
-// proxy structs for overloaded operators inside classes
+// proxy structs for overloading operators inside classes
 // default 8 bit, 16 bit for Timer1
 // require register accessors
 

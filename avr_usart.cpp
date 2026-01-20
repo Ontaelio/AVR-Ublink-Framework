@@ -190,10 +190,21 @@ void usart::printHex(unsigned val)
 	printString("0x");
 	while (k-=4)
 		if (val >> k) sendByte(hexChar((val >> k)&0x0F));
-	sendByte(hexChar(val&0x0F));
+	sendByte(hexChar(val&0x0F));	
 }
 
-
+void usart::printBin(unsigned val)
+{
+	uint8_t len;
+	if (val < 256) len = 8;
+	else if (val < 0xFFFF) len = 16;
+	else if (val < 0xFFFFFFFF) len = 32;
+	else len = 64;
+	printString("0b");
+	while (--len)
+		if (val & (1<<len)) sendByte('1'); else sendByte('0');
+	if (val & 1) sendByte('1'); else sendByte('0');	
+}
 
 void usart::getStream(uint8_t* dat, uint16_t size)
 {
