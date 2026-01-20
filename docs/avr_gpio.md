@@ -137,7 +137,7 @@ Note: an external capacitor on AREF is recommended, not required. Most boards ha
 
 ## PWM pins
 
-This library provides very basic PWM functionality, mostly corresponding to the `analogWrite()` except all pins work in fast PWM mode (8 bit, /64 prescaler). For better PWM control dedicated timer libraries should be used.
+This library provides very basic PWM functionality, mostly corresponding to the `analogWrite()` except all pins work in Phase Correct PWM mode (8 bit, /64 prescaler for timers 0 and 1, /32 for timer 2). For better PWM control dedicated timer libraries should be used.
 
 Class **pwmPin**(uint8_t pn)\
 Creates a pwm-outputting pin `pn`. `pn` is a 4-bit value where three left bits represent a timer (2|1|0)and the lsb represents the channel. Any of these macros can be used here:
@@ -150,11 +150,15 @@ Creates a pwm-outputting pin `pn`. `pn` is a 4-bit value where three left bits r
 |PIN11 | PINB3 | 8|_timer2, A_
 |PIN3 | PIND3 | 9|_timer2, B_
 
+_There's an additional **pwmPinInv** class that uses inverted PWM mode (set on compare). Use it if you ground stuff on the Atmega (connect cathode to the pin in case of LEDs). Note that this approach is right and should be used always._
+
 void **init()**: not _exactly_ needed, you may use it in `setup()` if something goes wrong or if you didn't disable Arduino's `init()`.
 
 void **write**(uint8_t val): write a pwm value to the pwm pin.
 
 Overloaded operators can also be used on pwmPin objects:\
 `=` to set or read pwm value;\
-`++` and `--`, both prefix and postfix;\
+`++` and `--`, both prefix and postfix (postfix returns `uint8_t`);\
 `+=` and `-=`.
+
+_Note: avoid using postfixes unless specifically required (e.g. `for` loops), as postfix has higher overhead (it has to save and return previous value)._
