@@ -12,6 +12,16 @@
 #ifndef UTILS_PRINTS_H_
 #define UTILS_PRINTS_H_
 
-void printTimer1();
+#include <stdint.h>
+#include <stdlib.h>
+#include <avr/io.h>
+#include <avr_usart.h>
+#include <timers16.h>
+
+void printTimer0(usart term);
+void printTimer1(usart term);
+void printTimer2(usart term);
+void printTimer16Config(usart term, timer1 tim);
+void printTimer16Profile(usart term, timer1 tim);
 
 #endif // UTILS_PRINTS_H_

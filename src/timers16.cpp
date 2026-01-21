@@ -185,7 +185,7 @@ timer1& timer1::config(const Timer16Config& cfg) {
     timer1::clear();
 
     TCCR1A = (cfg.mode & 0x03) | (cfg.onCompareA << 6) | (cfg.onCompareB << 4);
-    TCCR1B = (cfg.mode & 0x18) << (1 | cfg.inputCfg);
+    TCCR1B = ((cfg.mode & 0x0C) << 1) | cfg.inputCfg;
     OCR1A = cfg.compA;
     OCR1B  = cfg.compB;
     ICR1 = cfg.inputCapture;
@@ -198,4 +198,18 @@ timer1& timer1::config(const Timer16Config& cfg) {
 
 timer1& timer1::profile(const Timer16Profile& p) {
     return timer1::config(p.cfg);
+}
+
+Timer16Config timer1::getConfig() {
+    Timer16Config cfg;
+    cfg.mode = (TCCR1A & 0x03) | ((TCCR1B & 0x18) >> 1);
+    cfg.compA = OCR1A;
+    cfg.compB = OCR1B;
+    cfg.prescaler = TCCR1B & 0x07;
+    cfg.events = TIMSK1;
+    cfg.onCompareA = (TCCR1A & 0xC0) >> 6;
+    cfg.onCompareB = (TCCR1A & 0x30) >> 4;
+    cfg.inputCapture = ICR1;
+    cfg.inputCfg = TCCR1B & 0xC0;
+    return cfg;
 }

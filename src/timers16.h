@@ -323,6 +323,7 @@ public:
 
     timer1& config(const Timer16Config& cfg);
     timer1& profile(const Timer16Profile& p);
+    Timer16Config getConfig();
 
     static inline RegProxy16Full<OCR1A_reg> A;
     static inline RegProxy16Full<OCR1B_reg> B;
