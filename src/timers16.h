@@ -1,6 +1,6 @@
 /*
  * Atmega328 16-bit timer1 library header file
-* Part of Ublink Atmega328 register and peripherals framework
+ * Part of Ublink Atmega328 register and peripherals framework
  *
  * Documentation available in the provided MD file.
  *
@@ -16,7 +16,7 @@
 #include <stdlib.h>
 #include <avr/io.h>
 #include <macros.h>
-#include <utils.h>
+#include <proxies.h>
 
 // atomic wrapper for debugging
 #define TIMER1_ATOMIC(code) \
@@ -99,6 +99,12 @@ private:
     struct OCR1B_reg {
         static inline volatile uint16_t& ref() {
             return OCR1B;
+    }
+    };
+
+    struct ICR1_reg {
+        static inline volatile uint16_t& ref() {
+            return ICR1;
     }
     };
 
@@ -307,14 +313,20 @@ public:
 	timer1& write(uint16_t val) {TCNT1 = val; return *this;}
 	timer1& operator= (const uint16_t& val) {write(val); return *this;}
 
-    void forceCompareA() {TCCR1C |= 1 << FOC1A;}
-    void forceCompareB() {TCCR1C |= 1 << FOC1B;}
+    inline void forceCompareA() {TCCR1C |= 1 << FOC1A;}
+    inline void forceCompareB() {TCCR1C |= 1 << FOC1B;}
+    inline void clearFlags() {TIFR1 = (1 << ICF1) | (1 << OCF1B) | (1 << OCF1A) | (1 << TOV1);}
+    inline void clearInput() {TIFR1 = (1 << ICF1);}
+    inline void clearCompA() {TIFR1 = (1 << OCF1A);}
+    inline void clearCompB() {TIFR1 = (1 << OCF1B);}
+    inline void clearOverflow() {TIFR1 = (1 << TOV1);}
 
     timer1& config(const Timer16Config& cfg);
     timer1& profile(const Timer16Profile& p);
 
-    static inline RegProxy16<OCR1A_reg> A;
-    static inline RegProxy16<OCR1B_reg> B;
+    static inline RegProxy16Full<OCR1A_reg> A;
+    static inline RegProxy16Full<OCR1B_reg> B;
+    static inline RegProxy16R<ICR1_reg> captured;
 
 };
 
