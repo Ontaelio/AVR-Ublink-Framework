@@ -156,6 +156,33 @@ public:
         return *this;
     }
 
+    timer0& bindPins() {
+        DDRD |= (1 << DDD5) | (1 << DDD6);
+        return *this;
+    }
+
+    timer0& bindPinA() {
+        DDRD |= (1 << DDD6);
+        return *this;
+    }
+
+    timer0& bindPinB() {
+        DDRD |= (1 << DDD5);
+        return *this;
+    }
+
+    void unbindPins() {
+        DDRD &= ~((1 << DDD5) | (1 << DDD6));
+    }
+
+    void unbindPinA() {
+        DDRD &= ~(1 << DDD6);
+    }
+
+    void unbindPinB() {
+        DDRD &= ~(1 << DDD5);
+    }
+
     inline void start(uint8_t ps) {TCCR0B = (TCCR0B & ~0x07) | ps & 0x0F;}
     inline void start() {TCCR0B = (TCCR0B & ~0x07) | _clkBits;}
     inline void stop() {TCCR0B &= ~0x07;}
@@ -285,6 +312,35 @@ public:
     timer2& prescaler(uint8_t ps) {
         _clkBits = ps >> 4;
         return *this;
+    }
+
+    timer2& bindPins() {
+        DDRB |= (1 << DDB3);
+        DDRD |= (1 << DDD3);
+        return *this;
+    }
+
+    timer2& bindPinA() {
+        DDRB |= (1 << DDB3);
+        return *this;
+    }
+
+    timer2& bindPinB() {
+        DDRD |= (1 << DDD3);
+        return *this;
+    }
+
+    void unbindPins() {
+        DDRB &= ~(1 << DDB3);
+        DDRD &= ~(1 << DDD3);
+    }
+
+    void unbindPinA() {
+        DDRB &= ~(1 << DDB3);
+    }
+
+    void unbindPinB() {
+        DDRD &= ~(1 << DDD3);
     }
 
     inline void start(uint8_t ps) {TCCR2B = (TCCR2B & ~0x07) | ps >> 4;}
@@ -424,6 +480,33 @@ public:
     timer1_8bit& prescaler(uint8_t ps) {
         _clkBits = ps & 0x0F;
         return *this;
+    }
+
+    timer1_8bit& bindPins() {
+        DDRB |= (1 << DDB1) | (1 << DDB2);
+        return *this;
+    }
+
+    timer1_8bit& bindPinA() {
+        DDRB |= (1 << DDB1);
+        return *this;
+    }
+
+    timer1_8bit& bindPinB() {
+        DDRB |= (1 << DDB2);
+        return *this;
+    }
+
+    void unbindPins() {
+        DDRB &= ~((1 << DDB1) | (1 << DDB2));
+    }
+
+    void unbindPinA() {
+        DDRB &= ~(1 << DDB1);
+    }
+
+    void unbindPinB() {
+        DDRB &= ~(1 << DDB2);
     }
 
     inline void start(uint8_t ps) {TCCR1B = (TCCR1B & ~0x07) | ps & 0x0F;}

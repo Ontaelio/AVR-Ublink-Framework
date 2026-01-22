@@ -299,6 +299,33 @@ public:
         return *this;
     }
 
+    timer1& bindPins() {
+        DDRB |= (1 << DDB1) | (1 << DDB2);
+        return *this;
+    }
+
+    timer1& bindPinA() {
+        DDRB |= (1 << DDB1);
+        return *this;
+    }
+
+    timer1& bindPinB() {
+        DDRB |= (1 << DDB2);
+        return *this;
+    }
+
+    void unbindPins() {
+        DDRB &= ~((1 << DDB1) | (1 << DDB2));
+    }
+
+    void unbindPinA() {
+        DDRB &= ~(1 << DDB1);
+    }
+
+    void unbindPinB() {
+        DDRB &= ~(1 << DDB2);
+    }
+
     inline void start(uint8_t ps) {TCCR1B = (TCCR1B & ~0x07) | ps & 0x0F;}
     inline void start() {TCCR1B = (TCCR1B & ~0x07) | _clkBits;}
     inline void stop() {TCCR1B &= ~0x07;}
