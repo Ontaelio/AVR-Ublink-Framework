@@ -17,11 +17,16 @@
 #include <avr/io.h>
 #include <avr_usart.h>
 #include <timers16.h>
+#include <timers8.h>
 
 void printTimer0(usart term);
 void printTimer1(usart term);
 void printTimer2(usart term);
 void printTimer16Config(usart term, timer1 tim);
 void printTimer16Profile(usart term, timer1 tim);
+void printTimer8Config(usart term, timer0 tim);
+void printTimer8Config(usart term, timer2 tim);
+void printTimer8Profile(usart term, timer0 tim);
+void printTimer8Profile(usart term, timer2 tim);
 
 #endif // UTILS_PRINTS_H_

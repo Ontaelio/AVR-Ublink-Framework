@@ -9,7 +9,7 @@
  * Can be freely used according to the GNU GPL license.
  */
 
- #ifndef TIMER16_H
+#ifndef TIMER16_H
 #define TIMER16_H
 
 #include <stdint.h>

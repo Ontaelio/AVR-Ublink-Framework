@@ -9,13 +9,14 @@
  * Can be freely used according to the GNU GPL license.
  */
 
-#ifndef TIMER8_H
-#define TIMER8_H
+#ifndef TIMERS8_H
+#define TIMERS8_H
 
 #include <stdint.h>
 #include <stdlib.h>
 #include <avr/io.h>
 #include <macros.h>
+#include <proxies.h>
 
 // general functions (sync)
 inline void syncTimers(uint8_t c) {GTCCR = 0x80; GTCCR |= c;} // c is 1 for timers 0 and 1 or 3 for all three
@@ -56,7 +57,8 @@ public:
     Timer8Profile& onCompareB(uint8_t o);
 
 private:
-    Timer8Config cfg;    
+    Timer8Config cfg;
+    
     friend class timer0;
     friend class timer2;
     friend class timer1_8bit;
@@ -67,6 +69,22 @@ private:
  * ========================================================= */
 
 class timer0 {
+private:
+    uint8_t _clkBits = 1;
+    
+    // Timer0 output compare register accessors
+    struct OCR0A_reg {
+        static inline volatile uint8_t& ref() {
+            return OCR0A;
+        }
+    };
+
+    struct OCR0B_reg {
+        static inline volatile uint8_t& ref() {
+            return OCR0B;
+        }    
+    };  
+
 public:
 
     timer0& clear();
@@ -153,9 +171,17 @@ public:
 
     void forceCompareA() {TCCR0B |= 1 << FOC0A;}
     void forceCompareB() {TCCR0B |= 1 << FOC0B;}
+    inline void clearFlags() {TIFR0 = (1 << OCF0B) | (1 << OCF0A) | (1 << TOV0);}
+    inline void clearCompA() {TIFR0 = (1 << OCF0A);}
+    inline void clearCompB() {TIFR0 = (1 << OCF0B);}
+    inline void clearOverflow() {TIFR0 = (1 << TOV0);}
 
-    void timer0::config(const Timer8Config& cfg);
-    void timer0::profile(const Timer8Profile& p);
+    void config(const Timer8Config& cfg);
+    void profile(const Timer8Profile& p);
+    Timer8Config getConfig();
+
+    static inline RegProxyFull<OCR0A_reg> A;
+    static inline RegProxyFull<OCR0B_reg> B;
 
     // legacy
     void writeA(uint8_t v) {OCR0A = v; return *this;}
@@ -166,10 +192,6 @@ public:
 	void OVFdisable() {TIMSK0 &= ~1;}
 	void COMPAdisable() {TIMSK0 &= ~2;}
 	void COMPBdisable() {TIMSK0 &= ~4;}
-
-
-private:
-    uint8_t _clkBits = 1;
 };
 
 
@@ -178,6 +200,22 @@ private:
  * ========================================================= */
 
 class timer2 {
+private:
+    uint8_t _clkBits = 1;
+    
+    // Timer0 output compare register accessors
+    struct OCR2A_reg {
+        static inline volatile uint8_t& ref() {
+            return OCR2A;
+        }
+    };
+
+    struct OCR2B_reg {
+        static inline volatile uint8_t& ref() {
+            return OCR2B;
+        }    
+    };
+
 public:
 
     timer2& clear();
@@ -264,9 +302,17 @@ public:
 
     void forceCompareA() {TCCR2B |= 1 << FOC2A;}
     void forceCompareB() {TCCR2B |= 1 << FOC2B;}
+    inline void clearFlags() {TIFR2 = (1 << OCF2B) | (1 << OCF2A) | (1 << TOV2);}
+    inline void clearCompA() {TIFR2 = (1 << OCF2A);}
+    inline void clearCompB() {TIFR2 = (1 << OCF2B);}
+    inline void clearOverflow() {TIFR2 = (1 << TOV2);}
 
-    void timer2::config(const Timer8Config& cfg);
-    void timer2::profile(const Timer8Profile& p);
+    void config(const Timer8Config& cfg);
+    void profile(const Timer8Profile& p);
+    Timer8Config getConfig();
+
+    static inline RegProxyFull<OCR2A_reg> A;
+    static inline RegProxyFull<OCR2B_reg> B;
 
     // legacy
     void writeA(uint8_t v) {OCR2A = v; return *this;}
@@ -277,10 +323,6 @@ public:
 	void OVFdisable() {TIMSK2 &= ~1;}
 	void COMPAdisable() {TIMSK2 &= ~2;}
 	void COMPBdisable() {TIMSK2 &= ~4;}
-
-
-private:
-    uint8_t _clkBits = 1;
 };
 
 
@@ -289,6 +331,22 @@ private:
  * ========================================================= */
 
 class timer1_8bit {
+private:
+    uint8_t _clkBits = 1;
+    
+    // Timer1 output compare register accessors
+    struct OCR1A_reg {
+        static inline volatile uint16_t& ref() {
+            return OCR1A;
+        }
+    };
+
+    struct OCR1B_reg {
+        static inline volatile uint16_t& ref() {
+            return OCR1B;
+    }
+    };
+
 public:
 
     // WGM10 - TCCR1A #0 (0x01)
@@ -383,10 +441,18 @@ public:
 
     void forceCompareA() {TCCR1C |= 1 << FOC1A;}
     void forceCompareB() {TCCR1C |= 1 << FOC1B;}
+    inline void clearFlags() {TIFR1 = (1 << OCF1B) | (1 << OCF1A) | (1 << TOV1);}
+    inline void clearCompA() {TIFR1 = (1 << OCF1A);}
+    inline void clearCompB() {TIFR1 = (1 << OCF1B);}
+    inline void clearOverflow() {TIFR1 = (1 << TOV1);}
 
-    void timer1_8bit::config(const Timer8Config& cfg);
-    void timer1_8bit::profile(const Timer8Profile& p);
+    void config(const Timer8Config& cfg);
+    void profile(const Timer8Profile& p);
+    Timer8Config getConfig();
 
+    static inline RegProxy16Full<OCR1A_reg> A;
+    static inline RegProxy16Full<OCR1B_reg> B;
+    
     // legacy
     void writeA(uint8_t v) {OCR1A = v; return *this;}
     void writeB(uint8_t v) {OCR1B = v; return *this;}
@@ -396,10 +462,6 @@ public:
 	void OVFdisable() {TIMSK1 &= ~1;}
 	void COMPAdisable() {TIMSK1 &= ~2;}
 	void COMPBdisable() {TIMSK1 &= ~4;}
-
-
-private:
-    uint8_t _clkBits = 1;
 };
 
-#endif // TIMER8_H
+#endif // TIMERS8_H

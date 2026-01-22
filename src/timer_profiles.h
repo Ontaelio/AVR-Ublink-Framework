@@ -1,7 +1,7 @@
 #ifndef TIMER_PROFILES_H_
 #define TIMER_PROFILES_H_
 
-#include <timers8_new.h>
+#include <timers8.h>
 #include <timers16.h>
 #include <macros.h>
 

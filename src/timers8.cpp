@@ -1,4 +1,4 @@
-#include "timers8_new.h"
+#include "timers8.h"
 #include <avr/io.h>
 
 /* =========================================================
@@ -199,4 +199,28 @@ inline void timer1_8bit::config(const Timer8Config& cfg) {
 
 inline void timer1_8bit::profile(const Timer8Profile& p) {
     timer1_8bit::config(p.cfg);
+}
+
+Timer8Config timer0::getConfig() {
+    Timer8Config cfg;
+    cfg.mode = (TCCR0A & 0x03) | ((TCCR0B & 0x08) >> 1);
+    cfg.compA = OCR0A;
+    cfg.compB = OCR0B;
+    cfg.prescaler = TCCR0B & 0x07;
+    cfg.events = TIMSK0;
+    cfg.onCompareA = (TCCR0A & 0xC0) >> 6;
+    cfg.onCompareB = (TCCR0A & 0x30) >> 4;
+    return cfg;
+}
+
+Timer8Config timer2::getConfig() {
+    Timer8Config cfg;
+    cfg.mode = (TCCR2A & 0x03) | ((TCCR2B & 0x08) >> 1);
+    cfg.compA = OCR2A;
+    cfg.compB = OCR2B;
+    cfg.prescaler = TCCR2B & 0x07;
+    cfg.events = TIMSK2;
+    cfg.onCompareA = (TCCR2A & 0xC0) >> 6;
+    cfg.onCompareB = (TCCR2A & 0x30) >> 4;
+    return cfg;
 }
