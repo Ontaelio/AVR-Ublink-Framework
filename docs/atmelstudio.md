@@ -12,3 +12,22 @@ Note: the default will apply to new projects. In an existing ptoject:
 * Project -> Properties -> Advanced -> Toolchain Flavour.
 
 Alternatively, you may create your own toolchain with CMake.
+
+Then:
+
+* download [avrdude](https://github.com/avrdudes/avrdude/releases)
+* Tools -> External Tools
+* Provide Title
+* Command: path to avrdude.exe (avrdude.exe included)
+* Initial directory: `-C"<path to avrdude.conf>" -v -patmega328p -carduino -PCOM# -b115200 -D -Uflash:w:"$(ProjectDir)Debug\$(TargetName).hex":i` Change path to avrdude.conf AND -PCOM# (port the board is connected to)
+* Add, OK.
+
+Now you will have a loader in Tools -> Title (provided at step 3)
+
+Do not forget to:
+`#include <stdint.h>`\
+`#include <stdlib.h>`\
+`#include <avr/io.h> // these three are already included`\
+`#include <avr/interrupt.h> // ISR`\
+`#include <avr/pgmspace.h> // PROGMEM`
+`#include <util/delay.h> // _delay_ms()`
