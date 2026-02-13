@@ -20,7 +20,7 @@
      portx = (uint8_t*)&prt;
 	 //portx = prt;
      *portx |= ((mode >> 1) & 1) << pinnum;
-     uint8_t* adr = portx - 1;
+     volatile uint8_t* adr = portx - 1;
      *adr |= (mode & 1) << pinnum;
      --adr;
      pinx = adr;
@@ -50,7 +50,7 @@
     {
      *portx &= ~(1 << pinnum);
      *portx |= ((md >> 1) & 1) << pinnum;
-     uint8_t* adr = pinx + 1;
+     volatile uint8_t* adr = pinx + 1;
      *adr &= ~(1 << pinnum);
      *adr |= (md & 1) << pinnum;
     }
@@ -89,15 +89,17 @@
 	  
   void digitalPin::externalIRQ(uint8_t c) //two pins with INT
 	{
-		if ((portx == &PORTD) && (pinnum == 2)) //INT0
+		if ((portx == &PORTD) && (pinnum == 2)){ //INT0
 			EIFR |= (1 << INTF0);
 			EICRA = (EICRA & ~0x03) | (c & 3); // clear and set
 			EIMSK = (EIMSK & ~1) | (c >> 2); // enable / disable
+		}
 			
-		if ((portx == &PORTD) && (pinnum == 3)) //INT1
+		if ((portx == &PORTD) && (pinnum == 3)){ //INT1
 			EIFR |= (1 << INTF1);
 			EICRA = (EICRA & ~0x0C) | (c << 2); // clear and set
 			EIMSK = (EIMSK & ~2) | (c & 4) << 1; // enable / disable
+		}
 	}
 
 

@@ -39,20 +39,20 @@
 
 // PWM (gpio)
 
-#define PIN6	2
-#define PIND6	2
-#define PIN5	3
-#define PIND5	3
+#define PWM_6	2
+#define PWM_D6	2
+#define PWM_5	3
+#define PWM_D5	3
 
-#define PIN9	4
-#define PINB1	4
-#define PIN10	5
-#define PINB2	5
+#define PWM_9	4
+#define PWM_B1	4
+#define PWM_10	5
+#define PWM_B2	5
 
-#define PIN11	8
-#define PINB3	8
-#define PIN3	9
-#define PIND3	9
+#define PWM_11	8
+#define PWM_B3	8
+#define PWM_3	9
+#define PWM_D3	9
 
 // GPIO interrupts, standalone setup, enable, disable functions
 

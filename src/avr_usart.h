@@ -12,6 +12,10 @@
 #ifndef ATMEGA328_USART_H_
 #define ATMEGA328_USART_H_
 
+#ifndef F_CPU
+#define F_CPU 16000000UL
+#endif // F_CPU
+
 #include <stdint.h>
 #include <stdlib.h>
 #include <avr/io.h>

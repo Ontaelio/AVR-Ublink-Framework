@@ -364,11 +364,11 @@ public:
     void OVFenable() {TIMSK1 |= 1;}
 	void COMPAenable() {TIMSK1 |= 2;}
 	void COMPBenable() {TIMSK1 |= 4;}
-    void ICenable() {TIMSK |= 0x20;}
+    void ICenable() {TIMSK1 |= 0x20;}
 	void OVFdisable() {TIMSK1 &= ~1;}
 	void COMPAdisable() {TIMSK1 &= ~2;}
 	void COMPBdisable() {TIMSK1 &= ~4;}
-    void ICdisable() {TIMSK &= ~0x20;}
+    void ICdisable() {TIMSK1 &= ~0x20;}
 
 };
 

@@ -143,12 +143,12 @@ Class **pwmPin**(uint8_t pn)\
 Creates a pwm-outputting pin `pn`. `pn` is a 4-bit value where three left bits represent a timer (2|1|0)and the lsb represents the channel. Any of these macros can be used here:
 |Arduino pin | The real pin|Value|_Timer, channel_|
 |----|------|---|---|
-|PIN6 | PIND6 | 2|_timer0, A_
-|PIN5 | PIND5 | 3| _timer0, B_
-|PIN9 | PINB1 | 4|_timer1, A_
-|PIN10 | PINB2 | 5|_timer1, B_
-|PIN11 | PINB3 | 8|_timer2, A_
-|PIN3 | PIND3 | 9|_timer2, B_
+|PWM_6 | PWM_D6 | 2|_timer0, A_
+|PWM_5 | PWM_D5 | 3| _timer0, B_
+|PWM_9 | PWM_B1 | 4|_timer1, A_
+|PWM_10 | PWM_B2 | 5|_timer1, B_
+|PWM_11 | PWM_B3 | 8|_timer2, A_
+|PWM_3 | PWM_D3 | 9|_timer2, B_
 
 _There's an additional **pwmPinInv** class that uses inverted PWM mode (set on compare). Use it if you ground stuff on the Atmega (connect cathode to the pin in case of LEDs). Note that this approach is right and should be used always._
 
