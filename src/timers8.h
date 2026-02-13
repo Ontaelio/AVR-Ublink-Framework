@@ -183,7 +183,7 @@ public:
         DDRD &= ~(1 << DDD5);
     }
 
-    inline void start(uint8_t ps) {TCCR0B = (TCCR0B & ~0x07) | ps & 0x0F;}
+    inline void start(uint8_t ps) {TCCR0B = (TCCR0B & ~0x07) | (ps & 0x0F);}
     inline void start() {TCCR0B = (TCCR0B & ~0x07) | _clkBits;}
     inline void stop() {TCCR0B &= ~0x07;}
     void disable() {TCCR0B &= ~0x07; TIMSK0 = 0;}
@@ -207,8 +207,10 @@ public:
     void profile(const Timer8Profile& p);
     Timer8Config getConfig();
 
+#if defined(__cpp_inline_variables)
     static inline RegProxyFull<OCR0A_reg> A;
     static inline RegProxyFull<OCR0B_reg> B;
+#endif
 
     // legacy
     void writeA(uint8_t v) {OCR0A = v;}
@@ -343,7 +345,7 @@ public:
         DDRD &= ~(1 << DDD3);
     }
 
-    inline void start(uint8_t ps) {TCCR2B = (TCCR2B & ~0x07) | ps >> 4;}
+    inline void start(uint8_t ps) {TCCR2B = (TCCR2B & ~0x07) | (ps >> 4);}
     inline void start() {TCCR2B = (TCCR2B & ~0x07) | _clkBits;}
     inline void stop() {TCCR2B &= ~0x07;}
     void disable() {TCCR2B &= ~0x07; TIMSK2 = 0;}
@@ -367,8 +369,10 @@ public:
     void profile(const Timer8Profile& p);
     Timer8Config getConfig();
 
+#if defined(__cpp_inline_variables)
     static inline RegProxyFull<OCR2A_reg> A;
     static inline RegProxyFull<OCR2B_reg> B;
+#endif
 
     // legacy
     void writeA(uint8_t v) {OCR2A = v;}
@@ -509,7 +513,7 @@ public:
         DDRB &= ~(1 << DDB2);
     }
 
-    inline void start(uint8_t ps) {TCCR1B = (TCCR1B & ~0x07) | ps & 0x0F;}
+    inline void start(uint8_t ps) {TCCR1B = (TCCR1B & ~0x07) | (ps & 0x0F);}
     inline void start() {TCCR1B = (TCCR1B & ~0x07) | _clkBits;}
     inline void stop() {TCCR1B &= ~0x07;}
     void disable() {TCCR1B &= ~0x07; TIMSK1 = 0;}
@@ -533,8 +537,10 @@ public:
     void profile(const Timer8Profile& p);
     Timer8Config getConfig();
 
+#if defined(__cpp_inline_variables)
     static inline RegProxy16Full<OCR1A_reg> A;
     static inline RegProxy16Full<OCR1B_reg> B;
+#endif
     
     // legacy
     void writeA(uint8_t v) {OCR1A = v;}

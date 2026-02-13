@@ -352,9 +352,11 @@ public:
     timer1& profile(const Timer16Profile& p);
     Timer16Config getConfig();
 
+#if defined(__cpp_inline_variables)
     static inline RegProxy16Full<OCR1A_reg> A;
     static inline RegProxy16Full<OCR1B_reg> B;
     static inline RegProxy16R<ICR1_reg> captured;
+#endif
 
     // legacy
     void writeA(uint16_t v) {OCR1A = v;}
