@@ -356,6 +356,18 @@ public:
     static inline RegProxy16Full<OCR1B_reg> B;
     static inline RegProxy16R<ICR1_reg> captured;
 
+    // legacy
+    void writeA(uint16_t v) {OCR1A = v;}
+    void writeB(uint16_t v) {OCR1B = v;}
+    void OVFenable() {TIMSK1 |= 1;}
+	void COMPAenable() {TIMSK1 |= 2;}
+	void COMPBenable() {TIMSK1 |= 4;}
+    void ICenable() {TIMSK |= 0x20;}
+	void OVFdisable() {TIMSK1 &= ~1;}
+	void COMPAdisable() {TIMSK1 &= ~2;}
+	void COMPBdisable() {TIMSK1 &= ~4;}
+    void ICdisable() {TIMSK &= ~0x20;}
+
 };
 
     #endif //TIMER16_H

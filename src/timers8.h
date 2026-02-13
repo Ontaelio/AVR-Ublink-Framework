@@ -211,8 +211,8 @@ public:
     static inline RegProxyFull<OCR0B_reg> B;
 
     // legacy
-    void writeA(uint8_t v) {OCR0A = v; return *this;}
-    void writeB(uint8_t v) {OCR0B = v; return *this;}
+    void writeA(uint8_t v) {OCR0A = v;}
+    void writeB(uint8_t v) {OCR0B = v;}
     void OVFenable() {TIMSK0 |= 1;}
 	void COMPAenable() {TIMSK0 |= 2;}
 	void COMPBenable() {TIMSK0 |= 4;}
@@ -371,8 +371,8 @@ public:
     static inline RegProxyFull<OCR2B_reg> B;
 
     // legacy
-    void writeA(uint8_t v) {OCR2A = v; return *this;}
-    void writeB(uint8_t v) {OCR2B = v; return *this;}
+    void writeA(uint8_t v) {OCR2A = v;}
+    void writeB(uint8_t v) {OCR2B = v;}
     void OVFenable() {TIMSK2 |= 1;}
 	void COMPAenable() {TIMSK2 |= 2;}
 	void COMPBenable() {TIMSK2 |= 4;}
@@ -537,8 +537,8 @@ public:
     static inline RegProxy16Full<OCR1B_reg> B;
     
     // legacy
-    void writeA(uint8_t v) {OCR1A = v; return *this;}
-    void writeB(uint8_t v) {OCR1B = v; return *this;}
+    void writeA(uint8_t v) {OCR1A = v;}
+    void writeB(uint8_t v) {OCR1B = v;}
     void OVFenable() {TIMSK1 |= 1;}
 	void COMPAenable() {TIMSK1 |= 2;}
 	void COMPBenable() {TIMSK1 |= 4;}
