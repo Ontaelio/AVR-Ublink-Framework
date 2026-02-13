@@ -19,7 +19,7 @@ Then:
 * Tools -> External Tools
 * Provide Title
 * Command: path to avrdude.exe (avrdude.exe included)
-* Initial directory: `-C"<path to avrdude.conf>" -v -patmega328p -carduino -PCOM# -b115200 -D -Uflash:w:"$(ProjectDir)Debug\$(TargetName).hex":i` Change path to avrdude.conf AND -PCOM# (port the board is connected to)
+* Initial directory: `-v -patmega328p -carduino -PCOM# -b115200 -Uflash:w:"$(ProjectDir)Debug\$(TargetName).hex":i` Change # in -PCOM# to the port the board is connected to
 * Add, OK.
 
 Now you will have a loader in Tools -> Title (provided at step 3)
