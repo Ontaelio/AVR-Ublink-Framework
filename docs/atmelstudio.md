@@ -29,5 +29,5 @@ Do not forget to:
 `#include <stdlib.h>`\
 `#include <avr/io.h> // these three are already included`\
 `#include <avr/interrupt.h> // ISR`\
-`#include <avr/pgmspace.h> // PROGMEM`
+`#include <avr/pgmspace.h> // PROGMEM`\
 `#include <util/delay.h> // _delay_ms()`

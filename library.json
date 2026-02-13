@@ -1,0 +1,13 @@
+{
+  "name": "Ublink AVR framework",
+  "version": "1.0.0",
+  "description": "Ublink for Atmega328p",
+  "keywords": "avr, gpio",
+  "authors": [
+    {
+      "name": "Ontaelio"
+    }
+  ],
+  "frameworks": "*",
+  "platforms": "*"
+}
