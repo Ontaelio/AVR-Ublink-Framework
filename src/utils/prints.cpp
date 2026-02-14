@@ -215,7 +215,7 @@ void print8profile(usart term, Timer8Config cfg){
    term << "    .compB(" << cfg.compB << ");\r\n";
 }
 
-printT0prescaler(usart term, Timer8Config cfg){
+void printT0prescaler(usart term, Timer8Config cfg){
    switch (cfg.prescaler){
       case 0: term << "    .prescaler(NO_CLOCK);\r\n"; break;
       case 1: term << "    .prescaler(DIV1);\r\n"; break;
@@ -229,7 +229,7 @@ printT0prescaler(usart term, Timer8Config cfg){
    }
 }
 
-printT2prescaler(usart term, Timer8Config cfg){
+void printT2prescaler(usart term, Timer8Config cfg){
    switch (cfg.prescaler){
       case 0: term << "    .prescaler(NO_CLOCK);\r\n"; break;
       case 1: term << "    .prescaler(DIV1);\r\n"; break;

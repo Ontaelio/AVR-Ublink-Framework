@@ -326,7 +326,7 @@ public:
         DDRB &= ~(1 << DDB2);
     }
 
-    inline void start(uint8_t ps) {TCCR1B = (TCCR1B & ~0x07) | ps & 0x0F;}
+    inline void start(uint8_t ps) {TCCR1B = (TCCR1B & ~0x07) | (ps & 0x0F);}
     inline void start() {TCCR1B = (TCCR1B & ~0x07) | _clkBits;}
     inline void stop() {TCCR1B &= ~0x07;}
     void disable() {TCCR1B &= ~0x07; TIMSK1 = 0;}
