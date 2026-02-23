@@ -164,7 +164,7 @@ public:
 	
 	[[deprecated("use read()")]]
 	uint16_t readData(){return read();}
-}
+};
 
 
 #endif // AVRSPI_H
