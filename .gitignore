@@ -1,2 +1,6 @@
 .theia/
+.vscode/
 backup/
+*.a
+*.o
+Makefile

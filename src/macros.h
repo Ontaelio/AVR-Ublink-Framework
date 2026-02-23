@@ -98,4 +98,27 @@
 #define SYNC_TWO    0x01
 #define SYNC_THREE  0x03
 
+/* =========================================================
+ *  SPI
+ * ========================================================= */
+
+#define LEADING 0x00
+#define TRAILING 0x01
+
+#ifndef HIGH
+#define HIGH 0x01
+#endif
+
+#ifndef LOW
+#define LOW 0x00
+#endif
+
+#define SPI_DIV4 0x00
+#define SPI_DIV16 0x01
+#define SPI_DIV64 0x02
+#define SPI_DIV128 0x03
+#define SPI_IDLE_HIGH 0x08
+#define SPI_PHASE_TRAILING 0x04
+#define SPI_LSB_FIRST 0x20 
+
 #endif // UBLINK_MACROS_H_
