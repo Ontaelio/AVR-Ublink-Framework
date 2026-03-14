@@ -73,6 +73,7 @@ void usart::dump()
 {
 	uint8_t dummy;
 	while (UCSR0A & (1<<RXC0)) dummy = UDR0;
+	(void)dummy;
 }
 
 void usart::sendStream(uint8_t* dat, uint32_t size)
@@ -184,7 +185,7 @@ void usart::printFloat(long double a, uint_fast8_t s)
 	}
 }
 
-void usart::printHex(unsigned val)
+void usart::printHex(unsigned long val)
 {
 	uint8_t k = 32;
 	printString("0x");
@@ -193,7 +194,7 @@ void usart::printHex(unsigned val)
 	sendByte(hexChar(val&0x0F));	
 }
 
-void usart::printBin(unsigned val)
+void usart::printBin(unsigned long val)
 {
 	uint8_t len;
 	if (val < 256) len = 8;

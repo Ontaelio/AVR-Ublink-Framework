@@ -35,17 +35,21 @@ public:
 	inline SpiSlave& phase(uint8_t ph) {
 		cfg = (cfg & ~(1 << CPHA)) | ((ph ? 1 : 0) << CPHA); return *this;}
 	inline SpiSlave& clock(uint8_t dvd) {
-		cfg = (cfg & ~(0x03) | dvd); return *this;}
-	inline SpiSlave& speed2x() {cfg |= (1 << MSTR);}
+		cfg = ((cfg & ~(0x03)) | dvd); return *this;}
+	inline SpiSlave& speed2x() {cfg |= (1 << MSTR); return *this;} // 2x saved in MSTR bit for cfg
 
-	inline SpiSlave& IRQenable() {cfg |= (1 << SPIE); SPCR |= (1 << SPIE);}
-	inline SpiSlave& IRQdisable() {cfg &= ~(1 << SPIE); SPCR &= ~(1 << SPIE);}
+	inline SpiSlave& IRQenable() {cfg |= (1 << SPIE); SPCR |= (1 << SPIE); return *this;}
+	inline SpiSlave& IRQdisable() {cfg &= ~(1 << SPIE); SPCR &= ~(1 << SPIE); return *this;}
 
 	inline void enable() {
+		DDRB |= ((1 << PB5) | (1 << PB3) | (1 << PB2)); // SCK, MOSI, SS = output (even if not used!)
+    	DDRB &=  ~(1 << PB4); // MISO = input
+		end(); // SS high to make sure slave sees the beginning of communications
 		if (cfg & 0x10) SPSR |= 0x01; // set 2x from cfg
 		else SPSR &= ~0x01; // disable 2x		
 		SPCR = (1 << SPE) | (1 << MSTR) | (cfg & 0xEF); 
 	}
+
 	inline void enable(uint8_t conf) {cfg = conf; enable();}
 	inline void disable() {end(); SPCR &= ~(1 << SPE);}
 
@@ -58,7 +62,7 @@ public:
     // send and receive single byte
 	inline uint8_t transfer(uint8_t dat){
 		SPDR = dat;
-        while (!(SPSR & (1<<SPIF)));
+        while (!(SPSR & (1<<SPIF))) {}
 		return SPDR;		
     }
 
@@ -83,27 +87,27 @@ public:
 	// send single byte, chainable, doesn't touch CS
 	inline SpiSlave& write(uint8_t dat){
 	    SPDR = dat; //send a byte
-	    while (!(SPSR & (1<<SPIF))); //wait until it's sent
+	    while (!(SPSR & (1<<SPIF))) {} //wait until it's sent
 		volatile uint8_t _ = SPDR; //must access SPDR to clear flag
 		(void)_; //avoid compiler warnings and make sure SPDR was read
         return *this;
 	}
 
 	// send an array of bytes, chainable, doesn't touch CS
-	inline SpiSlave& write(uint8_t* dat, uint8_t len){
+	inline SpiSlave& write(const uint8_t* dat, uint8_t len){
 		transfer(dat, nullptr, len);
 		return *this;
 	}
 
 	// same for bigger arrays
-	inline SpiSlave& write16(uint8_t* dat, uint16_t len){
-		transfer(dat, nullptr, len);
+	inline SpiSlave& write16(const uint8_t* dat, uint16_t len){
+		transfer16(dat, nullptr, len);
 		return *this;
 	}
 	
 	inline uint8_t read(){
 		SPDR = 0xFF;
-        while (!(SPSR & (1<<SPIF)));
+        while (!(SPSR & (1<<SPIF))) {}
 		return SPDR;		
     }
 
@@ -120,10 +124,14 @@ public:
 // transactions mode
 
 	inline uint8_t single(uint8_t dat){
-		return transfer(dat);
+		uint8_t res;
+		begin();
+		res = transfer(dat);
+		end();
+		return res;
 	}
 
-	inline void writeStream(uint8_t* dat, uint16_t len){
+	inline void writeStream(const uint8_t* dat, uint16_t len){
 		begin();
 		transfer(dat, nullptr, len);
 		end();
@@ -135,16 +143,16 @@ public:
 		end();
 	}
 	
-	inline void transferStream(uint8_t* arr_out, uint8_t* arr_in, uint8_t len){
+	inline void transferStream(const uint8_t* arr_out, uint8_t* arr_in, uint16_t len){
 		begin();
 		transfer(arr_out, arr_in, len);
 		end();
 	}
 
-	inline void seqTransfer(uint8_t* arr_out, uint8_t num_out, uint8_t* arr_in, uint8_t num_in){
+	inline void seqTransfer(const uint8_t* arr_out, uint16_t num_out, uint8_t* arr_in, uint16_t num_in){
 		begin();
-		transfer(arr_out, nullptr, num_out);
-		transfer(nullptr, arr_in, num_in);
+		transfer16(arr_out, nullptr, num_out);
+		transfer16(nullptr, arr_in, num_in);
 		end();
 	}
 
@@ -155,8 +163,13 @@ public:
 
 // legacy / deprecated
 
+	[[deprecated("not needed, use enable(conf)")]]
 	inline void init(uint8_t conf) {cfg = conf;}
+
+	[[deprecated("use begin()")]]
 	inline void ss_low() {ssPin.low();}
+
+	[[deprecated("use end()")]]
 	inline void ss_high() {ssPin.high();}
 		
 	[[deprecated("use write()")]]

@@ -52,8 +52,8 @@ public:
 	void fprintUInt(uint32_t a, uint_fast8_t s);
 
 	void printFloat(long double a, uint_fast8_t s = 2);
-	void printHex(unsigned val);
-	void printBin(unsigned val);
+	void printHex(unsigned long val);
+	void printBin(unsigned long val);
 
 	char getChar();
 	void getStream(uint8_t* dat, uint16_t size);

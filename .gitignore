@@ -1,6 +1,7 @@
 .theia/
 .vscode/
 backup/
+tests/
 *.a
 *.o
 Makefile
