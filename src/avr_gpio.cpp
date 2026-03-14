@@ -11,7 +11,7 @@
  
 #include <avr_gpio.h>
 
-  digitalPin::digitalPin(volatile uint8_t& prt, uint8_t pn, uint8_t mode)
+digitalPin::digitalPin(volatile uint8_t& prt, uint8_t pn, uint8_t mode)
 //    : digitalPin((uint8_t*)&prt, pn, mode)
 // {}
 

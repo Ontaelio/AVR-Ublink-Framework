@@ -112,12 +112,29 @@ public:
     }
 
 	inline SpiSlave& read(uint8_t* dat, uint8_t len){
-		transfer(nullptr, dat, len);
+		//transfer(nullptr, dat, len);
+		SPDR = 0xFF;
+		uint8_t i = 0;
+		while (--len){
+			while (!(SPSR & (1<<SPIF)));
+			dat[i++] = SPDR;
+			SPDR = 0xFF;
+		}
+		while (!(SPSR & (1<<SPIF)));
+		dat [i] = SPDR;
 		return *this;
 	}
 
 	inline SpiSlave& read16(uint8_t* dat, uint16_t len){
-		transfer16(nullptr, dat, len);
+		SPDR = 0xFF;
+		uint16_t i = 0;
+		while (--len){
+			while (!(SPSR & (1<<SPIF)));
+			dat[i++] = SPDR;
+			SPDR = 0xFF;
+		}
+		while (!(SPSR & (1<<SPIF)));
+		dat [i] = SPDR;
 		return *this;
 	}
 
