@@ -26,6 +26,10 @@ private:
 public:
     SpiMemory(SpiSlave& dev) : device(dev) {}
 
+    void enable(){
+        device.speed2x().enable();
+    }
+
     uint8_t busy(){
         uint8_t sr;
         device.begin().write(0x05);
