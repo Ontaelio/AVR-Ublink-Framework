@@ -44,8 +44,8 @@ public:
 	inline UsartSpiSlave& IRQdisable() {cfg &= ~(1 << SPIE); SPCR &= ~(1 << SPIE); return *this;}
 
 	inline void enable() {
-		//DDRB |= ((1 << PB5) | (1 << PB3) | (1 << PB2)); // SCK, MOSI, SS = output (even if not used!)
-    	//DDRB &=  ~(1 << PB4); // MISO = input
+		DDRD |= ((1 << PD4) | (1 << PD1)); // SCK, MOSI)
+    	DDRD &=  ~(1 << PD0); // MISO = input
 		end(); // SS high to make sure slave sees the beginning of communications
         UCSR0C = ((cfg >> 3) & (1<<UDORD0)); //LSB/MSB, clearing the rest
         UCSR0C = (UCSR0C & ~(1<<UCPOL0)) | ((cfg >> 3) & (1<<UCPOL0)); //polarity
@@ -55,11 +55,12 @@ public:
         UCSR0B = (cfg & (1<<SPIE)); //IRQ on RX, same bit position, clear the rest
 		UCSR0C |= (1<<UMSEL01) | (1<<UMSEL00); // select Master SPI mode
         UCSR0B = (1<<RXEN0) | (1<<TXEN0); // enable RX and TX
-        // SPCR = (1 << SPE) | (1 << MSTR) | (cfg & 0xEF); 
+        volatile uint8_t _ = UDR0; // make sure we clear the byte there to avoid errors
+        (void)_;
 	}
 
 	inline void enable(uint8_t conf) {cfg = conf; enable();}
-	inline void disable() {end(); SPCR &= ~(1 << SPE);}
+	inline void disable() {end(); UCSR0B &= ~((1<<RXEN0) | (1<<TXEN0));}
 
 // continuous mode
 
@@ -69,9 +70,9 @@ public:
 
     // send and receive single byte
 	inline uint8_t transfer(uint8_t dat){
-		SPDR = dat;
-        while (!(SPSR & (1<<SPIF))) {}
-		return SPDR;		
+		UDR0 = dat;                          
+        while (!(UCSR0A & (1<<RXC0)));
+        return UDR0; 		
     }
 
 	// send and receive an array of bytes of length len. Chainable
@@ -94,9 +95,9 @@ public:
 
 	// send single byte, chainable, doesn't touch CS
 	inline UsartSpiSlave& write(uint8_t dat){
-	    SPDR = dat; //send a byte
-	    while (!(SPSR & (1<<SPIF))) {} //wait until it's sent
-		volatile uint8_t _ = SPDR; //must access SPDR to clear flag
+	    UDR0 = dat; //send a byte
+	    while (!(UCSR0A & (1<<RXC0))) {} //wait until it's sent
+		volatile uint8_t _ = UDR0; //must read UDR0 to clear RXC0
 		(void)_; //avoid compiler warnings and make sure SPDR was read
         return *this;
 	}
@@ -114,35 +115,35 @@ public:
 	}
 	
 	inline uint8_t read(){
-		SPDR = 0xFF;
-        while (!(SPSR & (1<<SPIF))) {}
-		return SPDR;		
+		UDR0 = 0xFF;                          
+        while (!(UCSR0A & (1<<RXC0)));
+        return UDR0;		
     }
 
 	// big reads are pipelined, unlike transfer
 	inline UsartSpiSlave& read(uint8_t* dat, uint8_t len){
-		SPDR = 0xFF;
+		UDR0 = 0xFF;
 		uint8_t i = 0;
 		while (--len){
-			while (!(SPSR & (1<<SPIF)));
-			dat[i++] = SPDR;
-			SPDR = 0xFF;
+			while (!(UCSR0A & (1<<RXC0)));
+			dat[i++] = UDR0;
+			UDR0 = 0xFF;
 		}
-		while (!(SPSR & (1<<SPIF)));
-		dat [i] = SPDR;
+		while (!(UCSR0A & (1<<RXC0)));
+		dat [i] = UDR0;
 		return *this;
 	}
 
 	inline UsartSpiSlave& read16(uint8_t* dat, uint16_t len){
-		SPDR = 0xFF;
+		UDR0 = 0xFF;
 		uint16_t i = 0;
 		while (--len){
-			while (!(SPSR & (1<<SPIF)));
-			dat[i++] = SPDR;
-			SPDR = 0xFF;
+			while (!(UCSR0A & (1<<RXC0)));
+			dat[i++] = UDR0;
+			UDR0 = 0xFF;
 		}
-		while (!(SPSR & (1<<SPIF)));
-		dat [i] = SPDR;
+		while (!(UCSR0A & (1<<RXC0)));
+		dat [i] = UDR0;
 		return *this;
 	}
 
@@ -183,8 +184,8 @@ public:
 
 // ISR mode
 
-	UsartSpiSlave& operator= (const uint8_t& dat) {SPDR = dat; return *this;}
-	operator uint16_t() {return SPDR;}
+	UsartSpiSlave& operator= (const uint8_t& dat) {UDR0 = dat; return *this;}
+	operator uint16_t() {return UDR0;}
 
 // legacy / deprecated
 

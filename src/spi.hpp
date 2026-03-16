@@ -48,6 +48,8 @@ public:
 		if (cfg & 0x10) SPSR |= 0x01; // set 2x from cfg
 		else SPSR &= ~0x01; // disable 2x		
 		SPCR = (1 << SPE) | (1 << MSTR) | (cfg & 0xEF); 
+		volatile uint8_t _ = SPDR; // clear the flag just in case
+		(void)_;
 	}
 
 	inline void enable(uint8_t conf) {cfg = conf; enable();}
