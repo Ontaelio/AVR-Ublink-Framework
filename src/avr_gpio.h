@@ -36,6 +36,8 @@ public:
     inline void write(uint8_t val) { *portx = (*portx & ~mask) | ((-val & 1) & mask); }
     inline uint8_t read() const    { return (*pinx & mask) != 0; }
     inline void invert()            { *pinx = mask; } // toggle via PINx
+
+	void mode(uint8_t md);
 	
 	void pinChangeIRQ(uint8_t c = 1);
 	void externalIRQ(uint8_t c);

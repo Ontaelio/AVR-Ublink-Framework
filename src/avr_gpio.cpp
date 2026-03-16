@@ -14,15 +14,20 @@
 digitalPin::digitalPin(volatile uint8_t& prt, uint8_t pn, uint8_t mode){
 	mask = 1 << pn;
     portx = (uint8_t*)&prt;
-    volatile uint8_t* adr = portx - 1;
-	//*adr |= (mode & 1) << pn;
-	//--adr;
-	//pinx = adr;
-    pinx = adr - 1;
-    *adr  |= (mode & 1) * mask; 
-    //*portx |= (mode & 1) * mask;  
-	*portx |= ((mode >> 1) & 1) * mask; //<< pinnum;
+    volatile uint8_t* ddr = portx - 1;
+    pinx = ddr - 1;
+    *ddr  |= (mode & 1) * mask; 
+	*portx |= ((mode >> 1) & 1) * mask; 
 	}
+
+void digitalPin::mode(uint8_t md)
+    {
+     *portx &= ~(mask);
+     *portx |= ((md >> 1) & 1) * mask;
+     volatile uint8_t* ddr = pinx + 1;
+     *ddr &= ~(mask);
+     *ddr |= (md & 1) * mask;
+    }
   
 void digitalPin::pinChangeIRQ(uint8_t c) //PCINT
     {
