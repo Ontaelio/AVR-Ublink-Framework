@@ -1,10 +1,10 @@
 /*
- * Atmega328 8-bit SPI library
+ * Atmega328 USART-SPI library
  * Part of Ublink Atmega328 register and peripherals framework
  *
  * Documentation available in the provided MD file.
  *
- * (c) 2021-... Dmitry Reznikov ontaelio(at)gmail.com
+ * (c) 2026 Dmitry Reznikov ontaelio(at)gmail.com
  *
  * Can be freely used according to the GNU GPL license.
  */
@@ -19,35 +19,43 @@
 #include <macros.h>
 
 
-class SpiSlave{
+class UsartSpiSlave{
 private:
     uint8_t cfg = 0; //(1 << MSTR);
+    uint16_t divider = 1;
     digitalPin ssPin;
 public:
-	SpiSlave(digitalPin gpin = digitalPin(PORTB, 2, OUTPUT)): ssPin(gpin) {}
+	UsartSpiSlave(digitalPin gpin): ssPin(gpin) {}
 
 // interface
 
-	inline SpiSlave& LSBfirst() {cfg |= (1 << DORD); return *this;}
-	inline SpiSlave& MSBfirst() {cfg &= ~(1 << DORD); return *this;}
-	inline SpiSlave& polarity(uint8_t pol) {
+	inline UsartSpiSlave& LSBfirst() {cfg |= (1 << DORD); return *this;}
+	inline UsartSpiSlave& MSBfirst() {cfg &= ~(1 << DORD); return *this;}
+	inline UsartSpiSlave& polarity(uint8_t pol) {
 		cfg = (cfg & ~(1 << CPOL)) | ((pol ? 1 : 0) << CPOL); return *this;}
-	inline SpiSlave& phase(uint8_t ph) {
+	inline UsartSpiSlave& phase(uint8_t ph) {
 		cfg = (cfg & ~(1 << CPHA)) | ((ph ? 1 : 0) << CPHA); return *this;}
-	inline SpiSlave& clock(uint8_t dvd) {
-		cfg = ((cfg & ~(0x03)) | dvd); return *this;}
-	inline SpiSlave& speed2x() {cfg |= (1 << MSTR); return *this;} // 2x saved in MSTR bit for cfg
+	inline UsartSpiSlave& clock(uint16_t dvd) {
+		divider = dvd; return *this;}
+    [[deprecated("No 2x in USART SPI, method ignored")]]
+	inline UsartSpiSlave& speed2x() {} // 2x not present in USART SPI
 
-	inline SpiSlave& IRQenable() {cfg |= (1 << SPIE); SPCR |= (1 << SPIE); return *this;}
-	inline SpiSlave& IRQdisable() {cfg &= ~(1 << SPIE); SPCR &= ~(1 << SPIE); return *this;}
+	inline UsartSpiSlave& IRQenable() {cfg |= (1 << SPIE); SPCR |= (1 << SPIE); return *this;}
+	inline UsartSpiSlave& IRQdisable() {cfg &= ~(1 << SPIE); SPCR &= ~(1 << SPIE); return *this;}
 
 	inline void enable() {
-		DDRB |= ((1 << PB5) | (1 << PB3) | (1 << PB2)); // SCK, MOSI, SS = output (even if not used!)
-    	DDRB &=  ~(1 << PB4); // MISO = input
+		//DDRB |= ((1 << PB5) | (1 << PB3) | (1 << PB2)); // SCK, MOSI, SS = output (even if not used!)
+    	//DDRB &=  ~(1 << PB4); // MISO = input
 		end(); // SS high to make sure slave sees the beginning of communications
-		if (cfg & 0x10) SPSR |= 0x01; // set 2x from cfg
-		else SPSR &= ~0x01; // disable 2x		
-		SPCR = (1 << SPE) | (1 << MSTR) | (cfg & 0xEF); 
+        UCSR0C = ((cfg >> 3) & (1<<UDORD0)); //LSB/MSB, clearing the rest
+        UCSR0C = (UCSR0C & ~(1<<UCPOL0)) | ((cfg >> 3) & (1<<UCPOL0)); //polarity
+        UCSR0C = (UCSR0C & ~(1<<UCPHA0)) | ((cfg >> 1) & (1<<UCPHA0)); //phase
+        UBRR0L = (divider & 0xFF); //clock lower bits
+        UBRR0H = (divider & 0xF00) >> 8; // clock high bits
+        UCSR0B = (cfg & (1<<SPIE)); //IRQ on RX, same bit position, clear the rest
+		UCSR0C |= (1<<UMSEL01) | (1<<UMSEL00); // select Master SPI mode
+        UCSR0B = (1<<RXEN0) | (1<<TXEN0); // enable RX and TX
+        // SPCR = (1 << SPE) | (1 << MSTR) | (cfg & 0xEF); 
 	}
 
 	inline void enable(uint8_t conf) {cfg = conf; enable();}
@@ -55,7 +63,7 @@ public:
 
 // continuous mode
 
-	inline SpiSlave& begin() {ssPin.low(); return *this;}
+	inline UsartSpiSlave& begin() {ssPin.low(); return *this;}
 	inline void end() {ssPin.high();}
 	inline void latch() {ssPin.high(); ssPin.low();}
 
@@ -67,7 +75,7 @@ public:
     }
 
 	// send and receive an array of bytes of length len. Chainable
-	inline SpiSlave& transfer(const uint8_t* tx, uint8_t* rx, uint8_t len) {
+	inline UsartSpiSlave& transfer(const uint8_t* tx, uint8_t* rx, uint8_t len) {
 		for (uint8_t i = 0; i < len; ++i) {
 			uint8_t r = transfer(tx ? tx[i] : 0xFF); // use dummy if no tx
 			if (rx) rx[i] = r;
@@ -76,7 +84,7 @@ public:
 	}
 
 	// same for bigger arrays
-	inline SpiSlave& transfer16(const uint8_t* tx, uint8_t* rx, uint16_t len) {
+	inline UsartSpiSlave& transfer16(const uint8_t* tx, uint8_t* rx, uint16_t len) {
 		for (uint16_t i = 0; i < len; ++i) {
 			uint8_t r = transfer(tx ? tx[i] : 0xFF); // use dummy if no tx
 			if (rx) rx[i] = r;
@@ -85,7 +93,7 @@ public:
 	}
 
 	// send single byte, chainable, doesn't touch CS
-	inline SpiSlave& write(uint8_t dat){
+	inline UsartSpiSlave& write(uint8_t dat){
 	    SPDR = dat; //send a byte
 	    while (!(SPSR & (1<<SPIF))) {} //wait until it's sent
 		volatile uint8_t _ = SPDR; //must access SPDR to clear flag
@@ -94,13 +102,13 @@ public:
 	}
 
 	// send an array of bytes, chainable, doesn't touch CS
-	inline SpiSlave& write(const uint8_t* dat, uint8_t len){
+	inline UsartSpiSlave& write(const uint8_t* dat, uint8_t len){
 		transfer(dat, nullptr, len);
 		return *this;
 	}
 
 	// same for bigger arrays
-	inline SpiSlave& write16(const uint8_t* dat, uint16_t len){
+	inline UsartSpiSlave& write16(const uint8_t* dat, uint16_t len){
 		transfer16(dat, nullptr, len);
 		return *this;
 	}
@@ -112,7 +120,7 @@ public:
     }
 
 	// big reads are pipelined, unlike transfer
-	inline SpiSlave& read(uint8_t* dat, uint8_t len){
+	inline UsartSpiSlave& read(uint8_t* dat, uint8_t len){
 		SPDR = 0xFF;
 		uint8_t i = 0;
 		while (--len){
@@ -125,7 +133,7 @@ public:
 		return *this;
 	}
 
-	inline SpiSlave& read16(uint8_t* dat, uint16_t len){
+	inline UsartSpiSlave& read16(uint8_t* dat, uint16_t len){
 		SPDR = 0xFF;
 		uint16_t i = 0;
 		while (--len){
@@ -175,7 +183,7 @@ public:
 
 // ISR mode
 
-	SpiSlave& operator= (const uint8_t& dat) {SPDR = dat; return *this;}
+	UsartSpiSlave& operator= (const uint8_t& dat) {SPDR = dat; return *this;}
 	operator uint16_t() {return SPDR;}
 
 // legacy / deprecated
