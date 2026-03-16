@@ -11,7 +11,7 @@
  
 #include <avr_gpio.h>
 
-digitalPin::digitalPin(volatile uint8_t& prt, uint8_t pn, uint8_t mode){
+DigitalPin::DigitalPin(volatile uint8_t& prt, uint8_t pn, uint8_t mode){
 	mask = 1 << pn;
     portx = (uint8_t*)&prt;
     volatile uint8_t* ddr = portx - 1;
@@ -20,7 +20,7 @@ digitalPin::digitalPin(volatile uint8_t& prt, uint8_t pn, uint8_t mode){
 	*portx |= ((mode >> 1) & 1) * mask; 
 	}
 
-void digitalPin::mode(uint8_t md)
+void DigitalPin::mode(uint8_t md)
     {
      *portx &= ~(mask);
      *portx |= ((md >> 1) & 1) * mask;
@@ -29,7 +29,7 @@ void digitalPin::mode(uint8_t md)
      *ddr |= (md & 1) * mask;
     }
   
-void digitalPin::pinChangeIRQ(uint8_t c) //PCINT
+void DigitalPin::pinChangeIRQ(uint8_t c) //PCINT
     {
 		if (c)
 		{
@@ -45,7 +45,7 @@ void digitalPin::pinChangeIRQ(uint8_t c) //PCINT
 		}
 	}
 	  
-  void digitalPin::externalIRQ(uint8_t c) //two pins with INT
+  void DigitalPin::externalIRQ(uint8_t c) //two pins with INT
 	{
 		if ((portx == &PORTD) && (mask == (1 << 2))){ //INT0
 			EIFR |= (1 << INTF0);
@@ -62,13 +62,13 @@ void digitalPin::pinChangeIRQ(uint8_t c) //PCINT
 
 
 /* basic analog pins */
-  analogPin::analogPin(uint8_t pn)
+  AnalogPin::AnalogPin(uint8_t pn)
 	{
 		pinnum = pn;
 		//init(pn); //seems not to work here, even in main()
 	}		
 		
-  void analogPin::init(uint8_t ps)
+  void AnalogPin::init(uint8_t ps)
 	{
 		ADCSRA &= ~0x7; // clear prescaler
 		ADCSRA |= ps; // set prescaler
@@ -79,7 +79,7 @@ void digitalPin::pinChangeIRQ(uint8_t c) //PCINT
 		//read();
 	}
 	
-  uint16_t analogPin::read()
+  uint16_t AnalogPin::read()
 	{
 		ADMUX &= ~0xF; // clear channel selection
 		ADMUX |= pinnum; // assign channel
@@ -88,29 +88,29 @@ void digitalPin::pinChangeIRQ(uint8_t c) //PCINT
 		return ( ADCL | (ADCH<<8) );
 	}
 		
-  void analogPin::start()
+  void AnalogPin::start()
 	{
 		ADMUX &= ~0xF; // clear channel selection
 		ADMUX |= pinnum; // assign channel
 		ADCSRA |= (1<<ADATE) | (1<<ADSC); // set auto trigger and start conversion
 	}
 	
-  void analogPin::stop()
+  void AnalogPin::stop()
 	{
 		ADCSRA &= ~(1<<ADATE); // clear auto trigger
 	}
   
-  void analogPin::digitalEnable()
+  void AnalogPin::digitalEnable()
     {
         DIDR0 &= ~(1<<pinnum); 
     }
 	
-  uint16_t analogPin::check() // read the current conversion result in free running mode
+  uint16_t AnalogPin::check() // read the current conversion result in free running mode
 	{
 		return ( ADCL | (ADCH<<8) );
 	}
 
-  void analogPin::AREF(uint8_t m)
+  void AnalogPin::AREF(uint8_t m)
   // by default REFS 0b01 is used (AVcc with an external capacitor on AREF pin)
   // this can be changed here, with m standing for:
   // 0 or ADC_AREF for AREF pin as a ref voltage source with internal Vref turned off
@@ -128,7 +128,7 @@ void digitalPin::pinChangeIRQ(uint8_t c) //PCINT
 	
 	
 /* PWM basic stuff */
-  pwmPin::pwmPin(uint8_t pn)
+  PwmPin::PwmPin(uint8_t pn)
    {
 		if (pn&2) // timer 0
 		{
@@ -151,7 +151,7 @@ void digitalPin::pinChangeIRQ(uint8_t c) //PCINT
 		init();
    }   
 
-   void pwmPin::init()
+   void PwmPin::init()
   {
 	  switch (pinnum)
 	  {
@@ -175,7 +175,7 @@ void digitalPin::pinChangeIRQ(uint8_t c) //PCINT
   }
   
   /* PWM basic stuff inverted*/
-  pwmPinInv::pwmPinInv(uint8_t pn)
+  PwmPinInv::PwmPinInv(uint8_t pn)
    {
 		if (pn&2) // timer 0
 		{
@@ -198,7 +198,7 @@ void digitalPin::pinChangeIRQ(uint8_t c) //PCINT
 		init();
    }   
 
-   void pwmPinInv::init()
+   void PwmPinInv::init()
   {
 	  switch (pinnum)
 	  {

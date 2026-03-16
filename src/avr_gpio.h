@@ -20,14 +20,14 @@
  * Digital Pins
  * =================================================== */
 
-class digitalPin{
+class DigitalPin{
 private:
 	volatile uint8_t* pinx;
 	volatile uint8_t* portx;
 	uint8_t mask;
 
 public:
-	digitalPin(volatile uint8_t& prt, uint8_t pn, uint8_t mode);
+	DigitalPin(volatile uint8_t& prt, uint8_t pn, uint8_t mode);
 	inline void high()  { *portx |= mask; }
     inline void low()   { *portx &= ~mask; }
     inline void set()   { high(); }
@@ -43,8 +43,11 @@ public:
 	void externalIRQ(uint8_t c);
 
 	operator uint8_t() {return read();}
-	digitalPin& operator= (const uint8_t& a) {write(a); return *this;}
+	DigitalPin& operator= (const uint8_t& a) {write(a); return *this;}
 };
+
+// legacy compatibility
+using digitalPin = DigitalPin;
 
 /* ===================================================
  * Analog Pins
