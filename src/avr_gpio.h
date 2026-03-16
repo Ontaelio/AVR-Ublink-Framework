@@ -20,30 +20,28 @@
  * Digital Pins
  * =================================================== */
 
-class digitalPin
-{
+class digitalPin{
 private:
-  volatile uint8_t* pinx;
-  volatile uint8_t* portx;
-  uint8_t pinnum;
+	volatile uint8_t* pinx;
+	volatile uint8_t* portx;
+	uint8_t mask;
 
 public:
-  //digitalPin(uint8_t* prt, uint8_t pn, uint8_t mode);
-  digitalPin(volatile uint8_t& prt, uint8_t pn, uint8_t mode);
-  void high();
-  void set();
-  void low();
-  void reset();
-  void mode(uint8_t md);
-  uint8_t read();
-  void write(uint8_t val);
-  void invert();
-  
-  void pinChangeIRQ(uint8_t c = 1);
-  void externalIRQ(uint8_t c);
+	digitalPin(volatile uint8_t& prt, uint8_t pn, uint8_t mode);
+	inline void high()  { *portx |= mask; }
+    inline void low()   { *portx &= ~mask; }
+    inline void set()   { high(); }
+    inline void reset() { low(); }
+    
+    inline void write(uint8_t val) { *portx = (*portx & ~mask) | ((-val & 1) & mask); }
+    inline uint8_t read() const    { return (*pinx & mask) != 0; }
+    inline void invert()            { *pinx = mask; } // toggle via PINx
+	
+	void pinChangeIRQ(uint8_t c = 1);
+	void externalIRQ(uint8_t c);
 
-  operator uint8_t() {return read();}
-  digitalPin& operator= (const uint8_t& a) {write(a); return *this;}
+	operator uint8_t() {return read();}
+	digitalPin& operator= (const uint8_t& a) {write(a); return *this;}
 };
 
 /* ===================================================

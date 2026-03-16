@@ -19,15 +19,20 @@
 //digitalPin cs(PORTD, 7, OUTPUT);
 //SpiSlave device(cs);
 
+template<typename Bus = SpiSlave>
 class SpiMemory{
 private:
-    SpiSlave& device;
+    Bus& device;
 
 public:
-    SpiMemory(SpiSlave& dev) : device(dev) {}
+    SpiMemory(Bus& dev) : device(dev) {}
 
     void enable(){
         device.speed2x().enable();
+    }
+
+    void disable(){
+        device.disable();
     }
 
     uint8_t busy(){
@@ -240,5 +245,8 @@ public:
         return res;
     }
 };
+
+using SpiMem      = SpiMemory<SpiSlave>;
+using UsartSpiMem = SpiMemory<UsartSpiSlave>;
 
 #endif // SPIMEMW25_H_

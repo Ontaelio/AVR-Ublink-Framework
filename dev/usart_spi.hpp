@@ -9,8 +9,8 @@
  * Can be freely used according to the GNU GPL license.
  */
 
-#ifndef AVRSPI_H
-#define AVRSPI_H
+#ifndef AVRUSARTSPI_H
+#define AVRUSARTSPI_H
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -37,8 +37,8 @@ public:
 		cfg = (cfg & ~(1 << CPHA)) | ((ph ? 1 : 0) << CPHA); return *this;}
 	inline UsartSpiSlave& clock(uint16_t dvd) {
 		divider = dvd; return *this;}
-    [[deprecated("No 2x in USART SPI, method ignored")]]
-	inline UsartSpiSlave& speed2x() {} // 2x not present in USART SPI
+    //[[deprecated("No 2x in USART SPI, method ignored")]]
+	inline UsartSpiSlave& speed2x() {return *this;} // 2x not present in USART SPI
 
 	inline UsartSpiSlave& IRQenable() {cfg |= (1 << SPIE); SPCR |= (1 << SPIE); return *this;}
 	inline UsartSpiSlave& IRQdisable() {cfg &= ~(1 << SPIE); SPCR &= ~(1 << SPIE); return *this;}
@@ -206,4 +206,4 @@ public:
 };
 
 
-#endif // AVRSPI_H
+#endif // AVRUSARTSPI_H

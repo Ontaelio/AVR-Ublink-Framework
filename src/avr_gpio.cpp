@@ -11,91 +11,44 @@
  
 #include <avr_gpio.h>
 
-digitalPin::digitalPin(volatile uint8_t& prt, uint8_t pn, uint8_t mode)
-//    : digitalPin((uint8_t*)&prt, pn, mode)
-// {}
-
-//  digitalPin::digitalPin(uint8_t* prt, uint8_t pn, uint8_t mode)
-    {pinnum = pn;
-     portx = (uint8_t*)&prt;
-	 //portx = prt;
-     *portx |= ((mode >> 1) & 1) << pinnum;
-     volatile uint8_t* adr = portx - 1;
-     *adr |= (mode & 1) << pinnum;
-     --adr;
-     pinx = adr;
-    }
+digitalPin::digitalPin(volatile uint8_t& prt, uint8_t pn, uint8_t mode){
+	mask = 1 << pn;
+    portx = (uint8_t*)&prt;
+    volatile uint8_t* adr = portx - 1;
+	//*adr |= (mode & 1) << pn;
+	//--adr;
+	//pinx = adr;
+    pinx = adr - 1;
+    *adr  |= (mode & 1) * mask; 
+    //*portx |= (mode & 1) * mask;  
+	*portx |= ((mode >> 1) & 1) * mask; //<< pinnum;
+	}
   
-  void digitalPin::high()
-    {
-      *portx |= 1 << pinnum;
-    }
-
-  void digitalPin::set()
-    {
-      *portx |= 1 << pinnum;
-    }
-  
-  void digitalPin::low()
-    {
-      *portx &= ~(1 << pinnum);
-    }
-
-  void digitalPin::reset()
-    {
-      *portx &= ~(1 << pinnum);
-    }
- 
-  void digitalPin::mode(uint8_t md)
-    {
-     *portx &= ~(1 << pinnum);
-     *portx |= ((md >> 1) & 1) << pinnum;
-     volatile uint8_t* adr = pinx + 1;
-     *adr &= ~(1 << pinnum);
-     *adr |= (md & 1) << pinnum;
-    }
-
-  uint8_t digitalPin::read()
-    {
-     uint8_t val = (*pinx >> pinnum) & 1;
-     return val;
-    }
-
-  void digitalPin::write(uint8_t val)
-    {
-		if (val) high(); else low();
-    }
-
-  void digitalPin::invert()
-    {
-      *pinx = 1 << pinnum;
-    }
-	
-  void digitalPin::pinChangeIRQ(uint8_t c) //PCINT
+void digitalPin::pinChangeIRQ(uint8_t c) //PCINT
     {
 		if (c)
 		{
-			if (portx == &PORTB) {PCICR |= 1 << PCIE0; PCMSK0 |= 1 << pinnum;}
-			else if (portx == &PORTC) {PCICR |= 1 << PCIE1; PCMSK1 |= 1 << pinnum;}
-			else if (portx == &PORTD) {PCICR |= 1 << PCIE2; PCMSK2 |= 1 << pinnum;}
+			if (portx == &PORTB) {PCICR |= 1 << PCIE0; PCMSK0 |= mask;}
+			else if (portx == &PORTC) {PCICR |= 1 << PCIE1; PCMSK1 |= mask;}
+			else if (portx == &PORTD) {PCICR |= 1 << PCIE2; PCMSK2 |= mask;}
 		}
 		else
 		{
-			if (portx == &PORTB) PCMSK0 &= ~(1 << pinnum);
-			else if (portx == &PORTC) PCMSK1 &= ~(1 << pinnum);
-			else if (portx == &PORTD) PCMSK2 &= ~(1 << pinnum);
+			if (portx == &PORTB) PCMSK0 &= ~(mask);
+			else if (portx == &PORTC) PCMSK1 &= ~(mask);
+			else if (portx == &PORTD) PCMSK2 &= ~(mask);
 		}
 	}
 	  
   void digitalPin::externalIRQ(uint8_t c) //two pins with INT
 	{
-		if ((portx == &PORTD) && (pinnum == 2)){ //INT0
+		if ((portx == &PORTD) && (mask == (1 << 2))){ //INT0
 			EIFR |= (1 << INTF0);
 			EICRA = (EICRA & ~0x03) | (c & 3); // clear and set
 			EIMSK = (EIMSK & ~1) | (c >> 2); // enable / disable
 		}
 			
-		if ((portx == &PORTD) && (pinnum == 3)){ //INT1
+		if ((portx == &PORTD) && (mask == (1 << 3))){ //INT1
 			EIFR |= (1 << INTF1);
 			EICRA = (EICRA & ~0x0C) | (c << 2); // clear and set
 			EIMSK = (EIMSK & ~2) | (c & 4) << 1; // enable / disable
