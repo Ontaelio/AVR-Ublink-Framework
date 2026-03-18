@@ -71,7 +71,7 @@ public:
             .write(address>>16)
             .write(address>>8)
             .write(address)
-            .read16(arr_in, num)
+            .read(arr_in, num)
             .end();
         return *this;
     }
@@ -83,7 +83,7 @@ public:
             .write(address>>8)
             .write(address)
             .write(0)
-            .read16(arr_in, num)
+            .read(arr_in, num)
             .end();
         return *this;
     }
@@ -108,7 +108,7 @@ public:
     }
 
     SpiMemory& read(uint8_t* arr_in, uint16_t num){
-        device.read16(arr_in, num);
+        device.read(arr_in, num);
         return *this;
     }
 

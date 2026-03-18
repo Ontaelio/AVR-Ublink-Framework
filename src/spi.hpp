@@ -69,16 +69,7 @@ public:
     }
 
 	// send and receive an array of bytes of length len. Chainable
-	inline SpiSlave& transfer(const uint8_t* tx, uint8_t* rx, uint8_t len) {
-		for (uint8_t i = 0; i < len; ++i) {
-			uint8_t r = transfer(tx ? tx[i] : 0xFF); // use dummy if no tx
-			if (rx) rx[i] = r;
-		}
-		return *this;
-	}
-
-	// same for bigger arrays
-	inline SpiSlave& transfer16(const uint8_t* tx, uint8_t* rx, uint16_t len) {
+	inline SpiSlave& transfer(const uint8_t* tx, uint8_t* rx, uint16_t len) {
 		for (uint16_t i = 0; i < len; ++i) {
 			uint8_t r = transfer(tx ? tx[i] : 0xFF); // use dummy if no tx
 			if (rx) rx[i] = r;
@@ -96,17 +87,11 @@ public:
 	}
 
 	// send an array of bytes, chainable, doesn't touch CS
-	inline SpiSlave& write(const uint8_t* dat, uint8_t len){
+	inline SpiSlave& write(const uint8_t* dat, uint16_t len){
 		transfer(dat, nullptr, len);
 		return *this;
 	}
 
-	// same for bigger arrays
-	inline SpiSlave& write16(const uint8_t* dat, uint16_t len){
-		transfer16(dat, nullptr, len);
-		return *this;
-	}
-	
 	inline uint8_t read(){
 		SPDR = 0xFF;
         while (!(SPSR & (1<<SPIF))) {}
@@ -114,29 +99,18 @@ public:
     }
 
 	// big reads are pipelined, unlike transfer
-	inline SpiSlave& read(uint8_t* dat, uint8_t len){
+	inline SpiSlave& read(uint8_t* dat, uint16_t len){
+		uint8_t* p = dat;
+		if (!len) return *this;
 		SPDR = 0xFF;
-		uint8_t i = 0;
 		while (--len){
 			while (!(SPSR & (1<<SPIF)));
-			dat[i++] = SPDR;
+			uint8_t r = SPDR;   
 			SPDR = 0xFF;
+			*p++ = r;			
 		}
 		while (!(SPSR & (1<<SPIF)));
-		dat [i] = SPDR;
-		return *this;
-	}
-
-	inline SpiSlave& read16(uint8_t* dat, uint16_t len){
-		SPDR = 0xFF;
-		uint16_t i = 0;
-		while (--len){
-			while (!(SPSR & (1<<SPIF)));
-			dat[i++] = SPDR;
-			SPDR = 0xFF;
-		}
-		while (!(SPSR & (1<<SPIF)));
-		dat [i] = SPDR;
+		*p = SPDR;
 		return *this;
 	}
 
@@ -152,26 +126,26 @@ public:
 
 	inline void writeStream(const uint8_t* dat, uint16_t len){
 		begin();
-		transfer16(dat, nullptr, len);
+		transfer(dat, nullptr, len);
 		end();
 	}
 	
 	inline void readStream(uint8_t* dat, uint16_t len){
 		begin();
-		read16(dat, len);
+		read(dat, len);
 		end();
 	}
 	
 	inline void transferStream(const uint8_t* arr_out, uint8_t* arr_in, uint16_t len){
 		begin();
-		transfer16(arr_out, arr_in, len);
+		transfer(arr_out, arr_in, len);
 		end();
 	}
 
 	inline void seqTransfer(const uint8_t* arr_out, uint16_t num_out, uint8_t* arr_in, uint16_t num_in){
 		begin();
-		transfer16(arr_out, nullptr, num_out);
-		transfer16(nullptr, arr_in, num_in);
+		transfer(arr_out, nullptr, num_out);
+		transfer(nullptr, arr_in, num_in);
 		end();
 	}
 

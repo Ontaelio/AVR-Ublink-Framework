@@ -76,16 +76,7 @@ public:
     }
 
 	// send and receive an array of bytes of length len. Chainable
-	inline UsartSpiSlave& transfer(const uint8_t* tx, uint8_t* rx, uint8_t len) {
-		for (uint8_t i = 0; i < len; ++i) {
-			uint8_t r = transfer(tx ? tx[i] : 0xFF); // use dummy if no tx
-			if (rx) rx[i] = r;
-		}
-		return *this;
-	}
-
-	// same for bigger arrays
-	inline UsartSpiSlave& transfer16(const uint8_t* tx, uint8_t* rx, uint16_t len) {
+	inline UsartSpiSlave& transfer(const uint8_t* tx, uint8_t* rx, uint16_t len) {
 		for (uint16_t i = 0; i < len; ++i) {
 			uint8_t r = transfer(tx ? tx[i] : 0xFF); // use dummy if no tx
 			if (rx) rx[i] = r;
@@ -98,22 +89,16 @@ public:
 	    UDR0 = dat; //send a byte
 	    while (!(UCSR0A & (1<<RXC0))) {} //wait until it's sent
 		volatile uint8_t _ = UDR0; //must read UDR0 to clear RXC0
-		(void)_; //avoid compiler warnings and make sure SPDR was read
+		(void)_; //avoid compiler warnings and make sure UDR was read
         return *this;
 	}
 
 	// send an array of bytes, chainable, doesn't touch CS
-	inline UsartSpiSlave& write(const uint8_t* dat, uint8_t len){
+	inline UsartSpiSlave& write(const uint8_t* dat, uint16_t len){
 		transfer(dat, nullptr, len);
 		return *this;
 	}
 
-	// same for bigger arrays
-	inline UsartSpiSlave& write16(const uint8_t* dat, uint16_t len){
-		transfer16(dat, nullptr, len);
-		return *this;
-	}
-	
 	inline uint8_t read(){
 		UDR0 = 0xFF;                          
         while (!(UCSR0A & (1<<RXC0)));
@@ -121,33 +106,32 @@ public:
     }
 
 	// big reads are pipelined, unlike transfer
-	inline UsartSpiSlave& read(uint8_t* dat, uint8_t len){
+	inline UsartSpiSlave& read(uint8_t* rx, uint16_t len){
+		if (!len) return *this;
+		uint8_t *p = rx;
+
+		// prefill
+		while (!(UCSR0A & (1<<UDRE0)));
 		UDR0 = 0xFF;
-		uint8_t i = 0;
-		while (--len){
-			while (!(UCSR0A & (1<<RXC0)));
-			dat[i++] = UDR0;
+
+		if (--len){
+			while (!(UCSR0A & (1<<UDRE0)));
 			UDR0 = 0xFF;
-		}
+			while (--len) {
+				while (!(UCSR0A & (1<<RXC0)));
+				*p++ = UDR0;
+				UDR0 = 0xFF;
+			}
+			while (!(UCSR0A & (1<<RXC0)));
+			*p++ = UDR0;
+			}
+
 		while (!(UCSR0A & (1<<RXC0)));
-		dat [i] = UDR0;
+		*p++ = UDR0;
 		return *this;
 	}
 
-	inline UsartSpiSlave& read16(uint8_t* dat, uint16_t len){
-		UDR0 = 0xFF;
-		uint16_t i = 0;
-		while (--len){
-			while (!(UCSR0A & (1<<RXC0)));
-			dat[i++] = UDR0;
-			UDR0 = 0xFF;
-		}
-		while (!(UCSR0A & (1<<RXC0)));
-		dat [i] = UDR0;
-		return *this;
-	}
-
-// transactions mode
+	// transactions mode
 
 	inline uint8_t single(uint8_t dat){
 		uint8_t res;
@@ -159,33 +143,33 @@ public:
 
 	inline void writeStream(const uint8_t* dat, uint16_t len){
 		begin();
-		transfer16(dat, nullptr, len);
+		transfer(dat, nullptr, len);
 		end();
 	}
 	
 	inline void readStream(uint8_t* dat, uint16_t len){
 		begin();
-		read16(dat, len);
+		read(dat, len);
 		end();
 	}
 	
 	inline void transferStream(const uint8_t* arr_out, uint8_t* arr_in, uint16_t len){
 		begin();
-		transfer16(arr_out, arr_in, len);
+		transfer(arr_out, arr_in, len);
 		end();
 	}
 
 	inline void seqTransfer(const uint8_t* arr_out, uint16_t num_out, uint8_t* arr_in, uint16_t num_in){
 		begin();
-		transfer16(arr_out, nullptr, num_out);
-		transfer16(nullptr, arr_in, num_in);
+		transfer(arr_out, nullptr, num_out);
+		transfer(nullptr, arr_in, num_in);
 		end();
 	}
 
 // ISR mode
 
 	UsartSpiSlave& operator= (const uint8_t& dat) {UDR0 = dat; return *this;}
-	operator uint16_t() {return UDR0;}
+	operator uint8_t() {return UDR0;}
 
 // legacy / deprecated
 

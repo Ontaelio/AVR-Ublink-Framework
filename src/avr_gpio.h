@@ -53,12 +53,12 @@ using digitalPin = DigitalPin;
  * Analog Pins
  * =================================================== */
 
-class analogPin
+class AnalogPin
 {
 private:
 	uint8_t pinnum;
 public:
-	analogPin(uint8_t pn);
+	AnalogPin(uint8_t pn);
 	void init(uint8_t ps = ADCPS128);
 	uint16_t read();
 	void start();
@@ -71,52 +71,59 @@ public:
 	operator uint16_t() {return check();}
 };
 
+// legacy compatibility
+using analogPin = AnalogPin;
+
 /* ===================================================
  * PWM Pins
  * =================================================== */
 
-class pwmPin
+class PwmPin
 {
 private:
 	volatile uint8_t* ocr;
 	volatile uint8_t* tccra;
 	uint8_t pinnum;
 public:
-	pwmPin(uint8_t pn);
+	PwmPin(uint8_t pn);
 	void init();
 	void write(uint8_t val) {*ocr = val;}
 	
 	operator uint8_t() {return (*ocr);}
-	pwmPin& operator= (const uint8_t& a) {write(a); return *this;}
-	pwmPin& operator++ () {write ((*ocr) + 1); return *this;} // prefix
+	PwmPin& operator= (const uint8_t& a) {write(a); return *this;}
+	PwmPin& operator++ () {write ((*ocr) + 1); return *this;} // prefix
 	uint8_t operator++ (int) {uint8_t old = *ocr; write (old + 1); return old;} // postfix
-	pwmPin& operator-- () {write ((*ocr) - 1); return *this;}
+	PwmPin& operator-- () {write ((*ocr) - 1); return *this;}
 	uint8_t operator-- (int) {uint8_t old = *ocr; write (old - 1); return old;}
-	pwmPin& operator+= (const uint16_t& a) {write ((*ocr) + a); return *this;}
-	pwmPin& operator-= (const uint16_t& a) {write ((*ocr) - a); return *this;}
+	PwmPin& operator+= (const uint16_t& a) {write ((*ocr) + a); return *this;}
+	PwmPin& operator-= (const uint16_t& a) {write ((*ocr) - a); return *this;}
 };
 
 // Inverted PWM pin, old version for convenience (cathode connected to pin)
-class pwmPinInv
+class PwmPinInv
 {
 private:
 	volatile uint8_t* ocr;
 	volatile uint8_t* tccra;
 	uint8_t pinnum;
 public:
-	pwmPinInv(uint8_t pn);
+	PwmPinInv(uint8_t pn);
 	void init();
 	void write(uint8_t val) {*ocr = val;}
 	
 	operator uint8_t() {return (*ocr);}
-	pwmPinInv& operator= (const uint8_t& a) {write(a); return *this;}
-	pwmPinInv& operator++ () {write ((*ocr) + 1); return *this;} // prefix
+	PwmPinInv& operator= (const uint8_t& a) {write(a); return *this;}
+	PwmPinInv& operator++ () {write ((*ocr) + 1); return *this;} // prefix
 	uint8_t operator++ (int) {uint8_t old = *ocr; write (old + 1); return old;} // postfix
-	pwmPinInv& operator-- () {write ((*ocr) - 1); return *this;}
+	PwmPinInv& operator-- () {write ((*ocr) - 1); return *this;}
 	uint8_t operator-- (int) {uint8_t old = *ocr; write (old - 1); return old;}
-	pwmPinInv& operator+= (const uint16_t& a) {write ((*ocr) + a); return *this;}
-	pwmPinInv& operator-= (const uint16_t& a) {write ((*ocr) - a); return *this;}
+	PwmPinInv& operator+= (const uint16_t& a) {write ((*ocr) + a); return *this;}
+	PwmPinInv& operator-= (const uint16_t& a) {write ((*ocr) - a); return *this;}
 };
+
+// legacy compatibility
+using pwmPin = PwmPin;
+using pwmPinInv = PwmPinInv;
 
 
 /* ===================================================
