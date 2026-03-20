@@ -94,6 +94,7 @@ public:
 	inline UsartSpiSlave& write(uint8_t dat){
 	    UDR0 = dat; //send a byte
 	    while (!(UCSR0A & (1<<RXC0))) {} //wait until it's sent
+		(void)UDR0;
 		//volatile uint8_t _ = UDR0; //must read UDR0 to clear RXC0 NOT NEEDED
 		//(void)_; //avoid compiler warnings and make sure UDR was read
         return *this;
@@ -105,9 +106,11 @@ public:
 		UDR0 = tx[0];
 		for (uint16_t i = 1; i < len; ++i) {
 			while (!(UCSR0A & (1<<RXC0)));
+			(void)UDR0;
 			UDR0 = tx[i];
 		}
 		while (!(UCSR0A & (1<<RXC0)));
+		(void)UDR0;
 		return *this;
 	}
 

@@ -60,7 +60,7 @@ public:
             .write(address >> 16)
             .write(address >> 8)
             .write(address)
-            .write16(arr_out, num)
+            .write(arr_out, num)
             .end();
         return *this;
     }
