@@ -68,12 +68,18 @@ public:
 		return SPDR;		
     }
 
-	// send and receive an array of bytes of length len. Chainable
+	// send and receive an array of bytes of length len. Chainable, pipelined
 	inline SpiSlave& transfer(const uint8_t* tx, uint8_t* rx, uint16_t len) {
-		for (uint16_t i = 0; i < len; ++i) {
-			uint8_t r = transfer(tx ? tx[i] : 0xFF); // use dummy if no tx
-			if (rx) rx[i] = r;
+		if (!len) return *this;
+		SPDR = tx[0];
+		for (uint16_t i = 1; i < len; ++i) {
+			while (!(SPSR & (1<<SPIF)));
+			uint8_t r = SPDR;
+			SPDR = tx[i];
+			rx[i-1] = r;
 		}
+		while (!(SPSR & (1<<SPIF)));
+		rx[len-1] = SPDR;		
 		return *this;
 	}
 
@@ -81,14 +87,23 @@ public:
 	inline SpiSlave& write(uint8_t dat){
 	    SPDR = dat; //send a byte
 	    while (!(SPSR & (1<<SPIF))) {} //wait until it's sent
-		volatile uint8_t _ = SPDR; //must access SPDR to clear flag
-		(void)_; //avoid compiler warnings and make sure SPDR was read
+		(void)SPDR;
+		//volatile uint8_t _ = SPDR; //must access SPDR to clear flag
+		//(void)_; //avoid compiler warnings and make sure SPDR was read
         return *this;
 	}
 
-	// send an array of bytes, chainable, doesn't touch CS
-	inline SpiSlave& write(const uint8_t* dat, uint16_t len){
-		transfer(dat, nullptr, len);
+	// send an array of bytes, chainable
+	inline SpiSlave& write(const uint8_t* tx, uint16_t len){
+		if (!len) return *this;
+		SPDR = tx[0];
+		for (uint16_t i = 1; i < len; ++i) {
+			while (!(SPSR & (1<<SPIF)));
+			(void)SPDR;   
+			SPDR = tx[i];
+		}
+		while (!(SPSR & (1<<SPIF)));
+		(void)SPDR;
 		return *this;
 	}
 
@@ -98,7 +113,7 @@ public:
 		return SPDR;		
     }
 
-	// big reads are pipelined, unlike transfer
+	// big read, pipelined
 	inline SpiSlave& read(uint8_t* dat, uint16_t len){
 		uint8_t* p = dat;
 		if (!len) return *this;
@@ -126,7 +141,7 @@ public:
 
 	inline void writeStream(const uint8_t* dat, uint16_t len){
 		begin();
-		transfer(dat, nullptr, len);
+		write(dat, len);
 		end();
 	}
 	
@@ -144,15 +159,15 @@ public:
 
 	inline void seqTransfer(const uint8_t* arr_out, uint16_t num_out, uint8_t* arr_in, uint16_t num_in){
 		begin();
-		transfer(arr_out, nullptr, num_out);
-		transfer(nullptr, arr_in, num_in);
+		write(arr_out, num_out);
+		read(arr_in, num_in);
 		end();
 	}
 
 // ISR mode
 
 	SpiSlave& operator= (const uint8_t& dat) {SPDR = dat; return *this;}
-	operator uint16_t() {return SPDR;}
+	operator uint8_t() {void(SPSR); return SPDR;}
 
 // legacy / deprecated
 

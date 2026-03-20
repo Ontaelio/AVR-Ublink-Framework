@@ -77,10 +77,16 @@ public:
 
 	// send and receive an array of bytes of length len. Chainable
 	inline UsartSpiSlave& transfer(const uint8_t* tx, uint8_t* rx, uint16_t len) {
-		for (uint16_t i = 0; i < len; ++i) {
-			uint8_t r = transfer(tx ? tx[i] : 0xFF); // use dummy if no tx
-			if (rx) rx[i] = r;
+		if (!len) return *this;
+		UDR0 = tx[0];
+		for (uint16_t i = 1; i < len; ++i) {
+			while (!(UCSR0A & (1<<RXC0)));
+			uint8_t r = UDR0;
+			UDR0 = tx[i];
+			rx[i-1] = r;
 		}
+		while (!(UCSR0A & (1<<RXC0)));
+		rx[len-1] = UDR0;
 		return *this;
 	}
 
@@ -88,14 +94,20 @@ public:
 	inline UsartSpiSlave& write(uint8_t dat){
 	    UDR0 = dat; //send a byte
 	    while (!(UCSR0A & (1<<RXC0))) {} //wait until it's sent
-		volatile uint8_t _ = UDR0; //must read UDR0 to clear RXC0
-		(void)_; //avoid compiler warnings and make sure UDR was read
+		//volatile uint8_t _ = UDR0; //must read UDR0 to clear RXC0 NOT NEEDED
+		//(void)_; //avoid compiler warnings and make sure UDR was read
         return *this;
 	}
 
 	// send an array of bytes, chainable, doesn't touch CS
-	inline UsartSpiSlave& write(const uint8_t* dat, uint16_t len){
-		transfer(dat, nullptr, len);
+	inline UsartSpiSlave& write(const uint8_t* tx, uint16_t len){
+		if (!len) return *this;
+		UDR0 = tx[0];
+		for (uint16_t i = 1; i < len; ++i) {
+			while (!(UCSR0A & (1<<RXC0)));
+			UDR0 = tx[i];
+		}
+		while (!(UCSR0A & (1<<RXC0)));
 		return *this;
 	}
 
@@ -143,7 +155,7 @@ public:
 
 	inline void writeStream(const uint8_t* dat, uint16_t len){
 		begin();
-		transfer(dat, nullptr, len);
+		write(dat, len);
 		end();
 	}
 	
@@ -161,8 +173,8 @@ public:
 
 	inline void seqTransfer(const uint8_t* arr_out, uint16_t num_out, uint8_t* arr_in, uint16_t num_in){
 		begin();
-		transfer(arr_out, nullptr, num_out);
-		transfer(nullptr, arr_in, num_in);
+		write(arr_out, num_out);
+		read(arr_in, num_in);
 		end();
 	}
 
