@@ -22,9 +22,12 @@
 class SpiSlave{
 private:
     uint8_t cfg = 0; //(1 << MSTR);
-    digitalPin ssPin;
+    DigitalPin ssPin;	
+
 public:
-	SpiSlave(digitalPin gpin = digitalPin(PORTB, 2, OUTPUT)): ssPin(gpin) {}
+	SpiSlave() : ssPin(PORTB, 2, OUTPUT) {}
+    SpiSlave(DigitalPin gpin) : ssPin(gpin) {}
+	//SpiSlave(digitalPin gpin = digitalPin(PORTB, 2, OUTPUT)): ssPin(gpin) {}
 
 // interface
 
@@ -58,6 +61,7 @@ public:
 // continuous mode
 
 	inline SpiSlave& begin() {ssPin.low(); return *this;}
+	inline SpiSlave& begin(DigitalPin cs_pin) {ssPin = cs_pin; ssPin.low(); return *this;}
 	inline void end() {ssPin.high();}
 	inline void latch() {ssPin.high(); ssPin.low();}
 

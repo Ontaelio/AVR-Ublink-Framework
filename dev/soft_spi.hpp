@@ -34,10 +34,10 @@
 
 class SoftSpiSlave {
 private:
-    DigitalPin mosi, miso, sck, cs;
+    DigitalPin& mosi, miso, sck, cs;
 
 public:
-    SoftSpiSlave(DigitalPin mosi, DigitalPin miso, DigitalPin sck, DigitalPin cs) : 
+    SoftSpiSlave(DigitalPin& mosi, DigitalPin& miso, DigitalPin& sck, DigitalPin& cs) : 
             mosi(mosi), miso(miso), sck(sck), cs(cs) {}
 
 // interface (all except speed produce errors, speed is kept for compatibility, but does nothing)
@@ -46,8 +46,8 @@ public:
 	inline SoftSpiSlave& MSBfirst() = delete;
 	inline SoftSpiSlave& polarity(uint8_t pol) = delete;
 	inline SoftSpiSlave& phase(uint8_t ph) = delete;
-	inline SoftSpiSlave& clock(uint8_t dvd) {}
-	inline SoftSpiSlave& speed2x() {}
+	inline SoftSpiSlave& clock(uint8_t dvd) {return *this;}
+	inline SoftSpiSlave& speed2x() {return *this;}
 	inline SoftSpiSlave& IRQenable() = delete;
 	inline SoftSpiSlave& IRQdisable() = delete;
 
@@ -59,12 +59,12 @@ public:
 		end(); // SS high to make sure slave sees the beginning of communications
 	}
 
-	inline void enable(digitalPin cs_pin) {end(); cs = cs_pin; enable();}
-	inline void disable() {end();}
+	inline void disable() {mosi.mode(INPUT);sck.mode(INPUT);end();}
     
 // continuous mode
 
 	inline SoftSpiSlave& begin() {cs.low(); return *this;}
+	inline SoftSpiSlave& begin(DigitalPin cs_pin) {cs = cs_pin; cs.low(); return *this;}
 	inline void end() {cs.high();}
 	inline void latch() {cs.high(); cs.low();}
 
@@ -72,12 +72,14 @@ public:
     inline uint8_t transfer(uint8_t dat){
         uint8_t rx = 0;
         for (uint8_t i = 0; i < 8; i++) {
-            mosi = dat >> 7;
+            mosi.write(dat & 0x80);
             SOFTSPI_DELAY();
             sck.high();
+			SOFTSPI_DELAY();
             rx = (rx << 1) | miso.read();
-            SOFTSPI_DELAY();
+            
             sck.low();
+			SOFTSPI_DELAY();
             dat <<= 1;
         }
         return rx;
@@ -85,7 +87,7 @@ public:
 
     // send and receive an array of bytes of length len. Chainable
 	inline SoftSpiSlave& transfer(const uint8_t* tx, uint8_t* rx, uint16_t len) {
-		for (uint16_t i = 0; i < len; ++i) {
+		for (uint16_t i = 0; i < len; ++i) { 
 			uint8_t r = transfer(tx ? tx[i] : 0xFF); // use dummy if no tx
 			if (rx) rx[i] = r;
 		}
