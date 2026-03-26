@@ -28,14 +28,14 @@ private:
 
 public:
 	DigitalPin(volatile uint8_t& prt, uint8_t pn, uint8_t mode);
-	inline void high()  { *portx |= mask; }
-    inline void low()   { *portx &= ~mask; }
-    inline void set()   { high(); }
-    inline void reset() { low(); }
+	inline void high()  {*portx |= mask;}
+    inline void low()   {*portx &= ~mask;}
+    inline void set()   {high();}
+    inline void reset() {low();}
     
-    inline void write(uint8_t val) { if (val) *portx |= mask; else *portx &= ~mask; }
-    inline uint8_t read() const { return (*pinx & mask) != 0; }
-	inline void invert() { *pinx = mask; } // toggle via PINx
+    inline void write(uint8_t val) {if (val) *portx |= mask; else *portx &= ~mask;}
+    inline uint8_t read() const {return (*pinx & mask) != 0;}
+	inline void invert() {*pinx = mask;} // toggle via PINx
 
 	void mode(uint8_t md);
 	

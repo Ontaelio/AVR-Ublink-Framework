@@ -51,19 +51,18 @@ public:
 		if (cfg & 0x10) SPSR |= 0x01; // set 2x from cfg
 		else SPSR &= ~0x01; // disable 2x		
 		SPCR = (1 << SPE) | (1 << MSTR) | (cfg & 0xEF); 
-		volatile uint8_t _ = SPDR; // clear the flag just in case
-		(void)_;
+		clear(); // clear the flag just in case
 	}
 
 	inline void enable(uint8_t conf) {cfg = conf; enable();}
 	inline void disable() {end(); SPCR &= ~(1 << SPE);}
 
-// continuous mode
+// fluent interface (method chaining)
 
 	inline SpiSlave& begin() {ssPin.low(); return *this;}
 	inline SpiSlave& begin(DigitalPin cs_pin) {ssPin = cs_pin; ssPin.low(); return *this;}
 	inline void end() {ssPin.high();}
-	inline void latch() {ssPin.high(); ssPin.low();}
+	inline SpiSlave& latch() {ssPin.high(); ssPin.low(); return *this;}
 
     // send and receive single byte
 	inline uint8_t transfer(uint8_t dat){
@@ -133,7 +132,7 @@ public:
 		return *this;
 	}
 
-// transactions mode
+// transaction interface
 
 	inline uint8_t single(uint8_t dat){
 		uint8_t res;
@@ -170,8 +169,9 @@ public:
 
 // ISR mode
 
-	SpiSlave& operator= (const uint8_t& dat) {SPDR = dat; return *this;}
-	operator uint8_t() {void(SPSR); return SPDR;}
+	inline SpiSlave& operator= (const uint8_t& dat) {SPDR = dat; return *this;}
+	inline operator uint8_t() {void(SPSR); return SPDR;}
+	inline void clear() {(void)SPSR; (void)SPDR;}		
 
 // legacy / deprecated
 
@@ -191,5 +191,8 @@ public:
 	uint16_t readData(){return read();}
 };
 
+// aliaces for modern audiences
+using SpiPeripheral = SpiSlave;
+using SpiDevice     = SpiSlave;
 
 #endif // AVRSPI_H
