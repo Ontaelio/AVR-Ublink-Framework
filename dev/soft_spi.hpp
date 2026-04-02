@@ -26,7 +26,7 @@
 #define SS_PIN_REG(port) (*(port - 2))
 #define SS_DDR_REG(port) (*(port - 1))
 
-// the following macro may be redefined by the user to make a slower SoltSpi
+// the following macro may be redefined by the user to make a slower SoltSpiSlave
 #ifndef SOFTSPI_DELAY
 #define SOFTSPI_DELAY() do {} while(0)
 #endif // SOFTSPI_DELAY
@@ -76,8 +76,7 @@ public:
             SOFTSPI_DELAY();
             sck.high();
 			SOFTSPI_DELAY();
-            rx = (rx << 1) | miso.read();
-            
+            rx = (rx << 1) | miso.read();            
             sck.low();
 			SOFTSPI_DELAY();
             dat <<= 1;
@@ -152,44 +151,5 @@ public:
 		end();
 	}
 };
-
-
-class SoftSpiFast {
-private:
-    volatile uint8_t* port;
-    uint8_t mosi_mask;
-    uint8_t miso_mask;
-    uint8_t sck_mask;
-    DigitalPin cs;
-
-public:
-    SoftSpiFast(volatile uint8_t* port,
-                uint8_t mosi_bit,
-                uint8_t miso_bit,
-                uint8_t sck_bit,
-                DigitalPin cs)
-        : port(port),
-          mosi_mask(1 << mosi_bit),
-          miso_mask(1 << miso_bit),
-          sck_mask (1 << sck_bit),
-          cs(cs)
-    {}
-
-    inline uint8_t transfer(uint8_t dat)
-    {
-        uint8_t rx = 0;
-        for (uint8_t i = 0; i < 8; i++) {
-            uint8_t base = (*port & ~(mosi_mask | sck_mask));
-            uint8_t mosi_bit = (-(dat >> 7)) & mosi_mask;
-            *port = base | mosi_bit | sck_mask;
-            rx = (rx << 1) | ((SS_PIN_REG(port) & miso_mask) ? 1 : 0);
-            *port = base | mosi_bit;
-            dat <<= 1;
-        }
-        return rx;
-    }
-
-};
-
 
 #endif // AVRSOFTSPI_H

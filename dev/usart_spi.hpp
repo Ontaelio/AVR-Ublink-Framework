@@ -51,8 +51,8 @@ public:
 	inline UsartSpiSlave& IRQdisable() {cfg &= ~(1 << SPIE); UCSR0B &= ~(1 << RXCIE0); return *this;}
 	inline UsartSpiSlave& IRQenableTX() {cfg |= (1 << SPR1); UCSR0B |= (1 << TXCIE0); return *this;}
 	inline UsartSpiSlave& IRQdisableTX() {cfg &= ~(1 << SPR1); UCSR0B &= ~(1 << TXCIE0); return *this;}
-	inline UsartSpiSlave& IRQenableUDR() {cfg |= (1 << SPR0); UCSR0B |= (1 << UDRIE0); return *this;}
-	inline UsartSpiSlave& IRQdisableUDR() {cfg &= ~(1 << SPR0); UCSR0B &= ~(1 << UDRIE0); return *this;}
+	inline UsartSpiSlave& IRQenableUDRE() {cfg |= (1 << SPR0); UCSR0B |= (1 << UDRIE0); return *this;}
+	inline UsartSpiSlave& IRQdisableUDRE() {cfg &= ~(1 << SPR0); UCSR0B &= ~(1 << UDRIE0); return *this;}
 
 	inline void enable() {
 		DDRD |= ((1 << PD4) | (1 << PD1)); // SCK, MOSI)

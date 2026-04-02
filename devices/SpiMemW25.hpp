@@ -248,5 +248,6 @@ public:
 
 using SpiMem      = SpiMemory<SpiSlave>;
 using UsartSpiMem = SpiMemory<UsartSpiSlave>;
+using SoftSpiMem  = SpiMemory<SoftSpiSlave>;
 
 #endif // SPIMEMW25_H_
