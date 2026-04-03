@@ -2,7 +2,7 @@
  * Atmega328 Soft SPI (bit-bang) library
  * Relies on Ublink Atmega328 register and peripherals framework
  *
- * Documentation available in the provided MD file.
+ * Documentation available in the provided MD file spi.md.
  *
  * (c) 2026 Dmitry Reznikov ontaelio(at)gmail.com
  *
@@ -26,30 +26,30 @@
 #define SS_PIN_REG(port) (*(port - 2))
 #define SS_DDR_REG(port) (*(port - 1))
 
-// the following macro may be redefined by the user to make a slower SoltSpiSlave
+// the following macro may be redefined by the user to make a slower SoltSpi
 #ifndef SOFTSPI_DELAY
 #define SOFTSPI_DELAY() do {} while(0)
 #endif // SOFTSPI_DELAY
 
 
-class SoftSpiSlave {
+class SoftSpi {
 private:
     DigitalPin& mosi, miso, sck, cs;
 
 public:
-    SoftSpiSlave(DigitalPin& mosi, DigitalPin& miso, DigitalPin& sck, DigitalPin& cs) : 
+    SoftSpi(DigitalPin& mosi, DigitalPin& miso, DigitalPin& sck, DigitalPin& cs) : 
             mosi(mosi), miso(miso), sck(sck), cs(cs) {}
 
 // interface (all except speed produce errors, speed is kept for compatibility, but does nothing)
 
-	inline SoftSpiSlave& LSBfirst() = delete;
-	inline SoftSpiSlave& MSBfirst() = delete;
-	inline SoftSpiSlave& polarity(uint8_t pol) = delete;
-	inline SoftSpiSlave& phase(uint8_t ph) = delete;
-	inline SoftSpiSlave& clock(uint8_t dvd) {return *this;}
-	inline SoftSpiSlave& speed2x() {return *this;}
-	inline SoftSpiSlave& IRQenable() = delete;
-	inline SoftSpiSlave& IRQdisable() = delete;
+	inline SoftSpi& LSBfirst() = delete;
+	inline SoftSpi& MSBfirst() = delete;
+	inline SoftSpi& polarity(uint8_t pol) = delete;
+	inline SoftSpi& phase(uint8_t ph) = delete;
+	inline SoftSpi& clock(uint8_t dvd) {return *this;}
+	inline SoftSpi& speed2x() {return *this;}
+	inline SoftSpi& IRQenable() = delete;
+	inline SoftSpi& IRQdisable() = delete;
 
     inline void enable() {
         mosi.mode(OUTPUT);
@@ -63,8 +63,8 @@ public:
     
 // continuous mode
 
-	inline SoftSpiSlave& begin() {cs.low(); return *this;}
-	inline SoftSpiSlave& begin(DigitalPin cs_pin) {cs = cs_pin; cs.low(); return *this;}
+	inline SoftSpi& begin() {cs.low(); return *this;}
+	inline SoftSpi& begin(DigitalPin cs_pin) {cs = cs_pin; cs.low(); return *this;}
 	inline void end() {cs.high();}
 	inline void latch() {cs.high(); cs.low();}
 
@@ -85,7 +85,7 @@ public:
     }
 
     // send and receive an array of bytes of length len. Chainable
-	inline SoftSpiSlave& transfer(const uint8_t* tx, uint8_t* rx, uint16_t len) {
+	inline SoftSpi& transfer(const uint8_t* tx, uint8_t* rx, uint16_t len) {
 		for (uint16_t i = 0; i < len; ++i) { 
 			uint8_t r = transfer(tx ? tx[i] : 0xFF); // use dummy if no tx
 			if (rx) rx[i] = r;
@@ -94,14 +94,14 @@ public:
 	}
 
     // send single byte, chainable, doesn't touch CS
-	inline SoftSpiSlave& write(uint8_t dat){
+	inline SoftSpi& write(uint8_t dat){
         uint8_t _ = transfer(dat);
         (void)_;
 	    return *this;
 	}
 
 	// send an array of bytes, chainable, doesn't touch CS
-	inline SoftSpiSlave& write(const uint8_t* dat, uint16_t len){
+	inline SoftSpi& write(const uint8_t* dat, uint16_t len){
 		transfer(dat, nullptr, len);
 		return *this;
 	}
@@ -110,8 +110,13 @@ public:
 		return transfer(0xFF);		
     }
 
+	inline SoftSpi& read(uint8_t& received){
+		received = transfer(0xFF);	
+		return *this;	
+    }
+
     // big read
-	inline SoftSpiSlave& read(uint8_t* dat, uint16_t len){
+	inline SoftSpi& read(uint8_t* dat, uint16_t len){
         transfer(nullptr, dat, len);
 		return *this;
 	}
@@ -151,5 +156,8 @@ public:
 		end();
 	}
 };
+
+// aliaces for compatibility with older code
+using SoftSpiSlave  	= SoftSpi;
 
 #endif // AVRSOFTSPI_H

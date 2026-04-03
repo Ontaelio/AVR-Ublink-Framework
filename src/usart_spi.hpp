@@ -2,7 +2,7 @@
  * Atmega328 USART-SPI library
  * Part of Ublink Atmega328 register and peripherals framework
  *
- * Documentation available in the provided MD file.
+ * Documentation available in the provided MD file spi.md.
  *
  * (c) 2026 Dmitry Reznikov ontaelio(at)gmail.com
  *
@@ -19,7 +19,7 @@
 #include <macros.h>
 
 
-class UsartSpiSlave{
+class UsartSpi{
 private:
     uint8_t cfg = 0; 
 		// SPIE = RXCIE
@@ -33,26 +33,26 @@ private:
     uint16_t divider = 1; // speed = F_CPU / (2 * (divider + 1))
     digitalPin ssPin;
 public:
-	UsartSpiSlave(digitalPin gpin): ssPin(gpin) {}
+	UsartSpi(digitalPin gpin): ssPin(gpin) {}
 
 // interface
 
-	inline UsartSpiSlave& LSBfirst() {cfg |= (1 << DORD); return *this;}
-	inline UsartSpiSlave& MSBfirst() {cfg &= ~(1 << DORD); return *this;}
-	inline UsartSpiSlave& polarity(uint8_t pol) {
+	inline UsartSpi& LSBfirst() {cfg |= (1 << DORD); return *this;}
+	inline UsartSpi& MSBfirst() {cfg &= ~(1 << DORD); return *this;}
+	inline UsartSpi& polarity(uint8_t pol) {
 		cfg = (cfg & ~(1 << CPOL)) | ((pol ? 1 : 0) << CPOL); return *this;}
-	inline UsartSpiSlave& phase(uint8_t ph) {
+	inline UsartSpi& phase(uint8_t ph) {
 		cfg = (cfg & ~(1 << CPHA)) | ((ph ? 1 : 0) << CPHA); return *this;}
-	inline UsartSpiSlave& clock(uint16_t dvd) {
+	inline UsartSpi& clock(uint16_t dvd) {
 		divider = dvd; return *this;}
-	inline UsartSpiSlave& speed2x() {divider = 0; return *this;} // set max speed assuming that's what is needed
+	inline UsartSpi& speed2x() {divider = 0; return *this;} // set max speed assuming that's what is needed
 
-	inline UsartSpiSlave& IRQenable() {cfg |= (1 << SPIE); UCSR0B |= (1 << RXCIE0); return *this;}
-	inline UsartSpiSlave& IRQdisable() {cfg &= ~(1 << SPIE); UCSR0B &= ~(1 << RXCIE0); return *this;}
-	inline UsartSpiSlave& IRQenableTX() {cfg |= (1 << SPR1); UCSR0B |= (1 << TXCIE0); return *this;}
-	inline UsartSpiSlave& IRQdisableTX() {cfg &= ~(1 << SPR1); UCSR0B &= ~(1 << TXCIE0); return *this;}
-	inline UsartSpiSlave& IRQenableUDRE() {cfg |= (1 << SPR0); UCSR0B |= (1 << UDRIE0); return *this;}
-	inline UsartSpiSlave& IRQdisableUDRE() {cfg &= ~(1 << SPR0); UCSR0B &= ~(1 << UDRIE0); return *this;}
+	inline UsartSpi& IRQenable() {cfg |= (1 << SPIE); UCSR0B |= (1 << RXCIE0); return *this;}
+	inline UsartSpi& IRQdisable() {cfg &= ~(1 << SPIE); UCSR0B &= ~(1 << RXCIE0); return *this;}
+	inline UsartSpi& IRQenableTX() {cfg |= (1 << SPR1); UCSR0B |= (1 << TXCIE0); return *this;}
+	inline UsartSpi& IRQdisableTX() {cfg &= ~(1 << SPR1); UCSR0B &= ~(1 << TXCIE0); return *this;}
+	inline UsartSpi& IRQenableUDRE() {cfg |= (1 << SPR0); UCSR0B |= (1 << UDRIE0); return *this;}
+	inline UsartSpi& IRQdisableUDRE() {cfg &= ~(1 << SPR0); UCSR0B &= ~(1 << UDRIE0); return *this;}
 
 	inline void enable() {
 		DDRD |= ((1 << PD4) | (1 << PD1)); // SCK, MOSI)
@@ -75,8 +75,8 @@ public:
 
 // continuous mode
 
-	inline UsartSpiSlave& begin() {ssPin.low(); return *this;}
-	inline UsartSpiSlave& begin(DigitalPin cs_pin) {ssPin = cs_pin; ssPin.low(); return *this;}
+	inline UsartSpi& begin() {ssPin.low(); return *this;}
+	inline UsartSpi& begin(DigitalPin cs_pin) {ssPin = cs_pin; ssPin.low(); return *this;}
 	inline void end() {ssPin.high();}
 	inline void latch() {ssPin.high(); ssPin.low();}
 
@@ -88,7 +88,7 @@ public:
     }
 
 	// send and receive an array of bytes of length len. Chainable
-	inline UsartSpiSlave& transfer(const uint8_t* tx, uint8_t* rx, uint16_t len) {
+	inline UsartSpi& transfer(const uint8_t* tx, uint8_t* rx, uint16_t len) {
 		if (!len) return *this;
 		UDR0 = tx[0];
 		for (uint16_t i = 1; i < len; ++i) {
@@ -103,7 +103,7 @@ public:
 	}
 
 	// send single byte, chainable, doesn't touch CS
-	inline UsartSpiSlave& write(uint8_t dat){
+	inline UsartSpi& write(uint8_t dat){
 	    UDR0 = dat; //send a byte
 	    while (!(UCSR0A & (1<<RXC0))) {} //wait until it's sent
 		(void)UDR0; //must read UDR0 to clear RXC
@@ -111,7 +111,7 @@ public:
 	}
 
 	// send an array of bytes, chainable, doesn't touch CS
-	inline UsartSpiSlave& write(const uint8_t* tx, uint16_t len){
+	inline UsartSpi& write(const uint8_t* tx, uint16_t len){
 		if (!len) return *this;
 		UDR0 = tx[0];
 		for (uint16_t i = 1; i < len; ++i) {
@@ -130,8 +130,15 @@ public:
         return UDR0;		
     }
 
+	inline UsartSpi& read(uint8_t& received){
+		UDR0 = 0xFF;                          
+        while (!(UCSR0A & (1<<RXC0)));
+        received = UDR0;	
+		return *this;	
+    }	
+
 	// big reads are pipelined
-	inline UsartSpiSlave& read(uint8_t* rx, uint16_t len){
+	inline UsartSpi& read(uint8_t* rx, uint16_t len){
 		if (!len) return *this;
 		uint8_t *p = rx;
 
@@ -193,7 +200,7 @@ public:
 
 // ISR mode
 
-	UsartSpiSlave& operator= (const uint8_t& dat) {UDR0 = dat; return *this;}
+	UsartSpi& operator= (const uint8_t& dat) {UDR0 = dat; return *this;}
 	operator uint8_t() {return UDR0;}
 
 // legacy / deprecated
@@ -214,5 +221,7 @@ public:
 	uint16_t readData(){return read();}
 };
 
+// aliaces for compatibility with older code
+using UsartSpiSlave  	= UsartSpi;
 
 #endif // AVRUSARTSPI_H

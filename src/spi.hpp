@@ -19,30 +19,30 @@
 #include <macros.h>
 
 
-class SpiSlave{
+class Spi{
 private:
     uint8_t cfg = 0; //(1 << MSTR);
     DigitalPin ssPin;	
 
 public:
-	SpiSlave() : ssPin(PORTB, 2, OUTPUT) {}
-    SpiSlave(DigitalPin gpin) : ssPin(gpin) {}
-	//SpiSlave(digitalPin gpin = digitalPin(PORTB, 2, OUTPUT)): ssPin(gpin) {}
+	Spi() : ssPin(PORTB, 2, OUTPUT) {}
+    Spi(DigitalPin gpin) : ssPin(gpin) {}
+	//Spi(digitalPin gpin = digitalPin(PORTB, 2, OUTPUT)): ssPin(gpin) {}
 
 // interface
 
-	inline SpiSlave& LSBfirst() {cfg |= (1 << DORD); return *this;}
-	inline SpiSlave& MSBfirst() {cfg &= ~(1 << DORD); return *this;}
-	inline SpiSlave& polarity(uint8_t pol) {
+	inline Spi& LSBfirst() {cfg |= (1 << DORD); return *this;}
+	inline Spi& MSBfirst() {cfg &= ~(1 << DORD); return *this;}
+	inline Spi& polarity(uint8_t pol) {
 		cfg = (cfg & ~(1 << CPOL)) | ((pol ? 1 : 0) << CPOL); return *this;}
-	inline SpiSlave& phase(uint8_t ph) {
+	inline Spi& phase(uint8_t ph) {
 		cfg = (cfg & ~(1 << CPHA)) | ((ph ? 1 : 0) << CPHA); return *this;}
-	inline SpiSlave& clock(uint8_t dvd) {
+	inline Spi& clock(uint8_t dvd) {
 		cfg = ((cfg & ~(0x03)) | dvd); return *this;}
-	inline SpiSlave& speed2x() {cfg |= (1 << MSTR); return *this;} // 2x saved in MSTR bit for cfg
+	inline Spi& speed2x() {cfg |= (1 << MSTR); return *this;} // 2x saved in MSTR bit for cfg
 
-	inline SpiSlave& IRQenable() {cfg |= (1 << SPIE); SPCR |= (1 << SPIE); return *this;}
-	inline SpiSlave& IRQdisable() {cfg &= ~(1 << SPIE); SPCR &= ~(1 << SPIE); return *this;}
+	inline Spi& IRQenable() {cfg |= (1 << SPIE); SPCR |= (1 << SPIE); return *this;}
+	inline Spi& IRQdisable() {cfg &= ~(1 << SPIE); SPCR &= ~(1 << SPIE); return *this;}
 
 	inline void enable() {
 		DDRB |= ((1 << PB5) | (1 << PB3) | (1 << PB2)); // SCK, MOSI, SS = output (even if not used!)
@@ -59,10 +59,10 @@ public:
 
 // fluent interface (method chaining)
 
-	inline SpiSlave& begin() {ssPin.low(); return *this;}
-	inline SpiSlave& begin(DigitalPin cs_pin) {ssPin = cs_pin; ssPin.low(); return *this;}
+	inline Spi& begin() {ssPin.low(); return *this;}
+	inline Spi& begin(DigitalPin cs_pin) {ssPin = cs_pin; ssPin.low(); return *this;}
 	inline void end() {ssPin.high();}
-	inline SpiSlave& latch() {ssPin.high(); ssPin.low(); return *this;}
+	inline Spi& latch() {ssPin.high(); ssPin.low(); return *this;}
 
     // send and receive single byte
 	inline uint8_t transfer(uint8_t dat){
@@ -72,7 +72,7 @@ public:
     }
 
 	// send and receive an array of bytes of length len. Chainable, pipelined
-	inline SpiSlave& transfer(const uint8_t* tx, uint8_t* rx, uint16_t len) {
+	inline Spi& transfer(const uint8_t* tx, uint8_t* rx, uint16_t len) {
 		if (!len) return *this;
 		SPDR = tx[0];
 		for (uint16_t i = 1; i < len; ++i) {
@@ -87,7 +87,7 @@ public:
 	}
 
 	// send single byte, chainable, doesn't touch CS
-	inline SpiSlave& write(uint8_t dat){
+	inline Spi& write(uint8_t dat){
 	    SPDR = dat; //send a byte
 	    while (!(SPSR & (1<<SPIF))) {} //wait until it's sent
 		(void)SPDR;
@@ -97,7 +97,7 @@ public:
 	}
 
 	// send an array of bytes, chainable
-	inline SpiSlave& write(const uint8_t* tx, uint16_t len){
+	inline Spi& write(const uint8_t* tx, uint16_t len){
 		if (!len) return *this;
 		SPDR = tx[0];
 		for (uint16_t i = 1; i < len; ++i) {
@@ -116,8 +116,15 @@ public:
 		return SPDR;		
     }
 
+	inline Spi& read(uint8_t& received){
+		SPDR = 0xFF;
+        while (!(SPSR & (1<<SPIF))) {}
+		received = SPDR;	
+		return *this;	
+    }
+
 	// big read, pipelined
-	inline SpiSlave& read(uint8_t* dat, uint16_t len){
+	inline Spi& read(uint8_t* dat, uint16_t len){
 		uint8_t* p = dat;
 		if (!len) return *this;
 		SPDR = 0xFF;
@@ -169,7 +176,7 @@ public:
 
 // ISR mode
 
-	inline SpiSlave& operator= (const uint8_t& dat) {SPDR = dat; return *this;}
+	inline Spi& operator= (const uint8_t& dat) {SPDR = dat; return *this;}
 	inline operator uint8_t() {void(SPSR); return SPDR;}
 	inline void clear() {(void)SPSR; (void)SPDR;}		
 
@@ -191,8 +198,60 @@ public:
 	uint16_t readData(){return read();}
 };
 
-// aliaces for modern audiences
-using SpiPeripheral = SpiSlave;
-using SpiDevice     = SpiSlave;
+class SpiBus{
+private:
+    uint8_t cfg = 0; 
+
+public:
+	SpiBus() {}
+    
+// interface
+
+	inline SpiBus& LSBfirst() {cfg |= (1 << DORD); return *this;}
+	inline SpiBus& MSBfirst() {cfg &= ~(1 << DORD); return *this;}
+	inline SpiBus& polarity(uint8_t pol) {
+		cfg = (cfg & ~(1 << CPOL)) | ((pol ? 1 : 0) << CPOL); return *this;}
+	inline SpiBus& phase(uint8_t ph) {
+		cfg = (cfg & ~(1 << CPHA)) | ((ph ? 1 : 0) << CPHA); return *this;}
+
+	inline SpiBus& IRQenable() {cfg |= (1 << SPIE); SPCR |= (1 << SPIE); return *this;}
+	inline SpiBus& IRQdisable() {cfg &= ~(1 << SPIE); SPCR &= ~(1 << SPIE); return *this;}
+
+	inline void enable(uint8_t firstByte = 255) {
+		DDRB &= ~((1 << PB5) | (1 << PB3) | (1 << PB2)); // SCK, MOSI, SS = input
+    	DDRB |=  (1 << PB4); // MISO = output
+		SPCR = (1 << SPE) | (cfg & 0xEF); 
+		clear(); // clear the flag just in case
+		SPDR = firstByte;
+	}
+
+	inline void disable() {SPCR &= ~(1 << SPE);}
+
+// ISR mode
+
+	inline SpiBus& operator= (const uint8_t& dat) {SPDR = dat; return *this;}
+	inline operator uint8_t() {void(SPSR); return SPDR;}
+	inline void clear() {(void)SPSR; (void)SPDR;}	
+	
+	inline uint8_t transfer(uint8_t nextByte = 255){
+		uint8_t received = SPDR;
+		SPDR = nextByte;
+		return received;
+	}
+
+// polling mode
+
+	uint8_t await(uint8_t nextByte = 255){
+		while (!(SPSR & (1<<SPIF))) {}
+		uint8_t received = SPDR;
+		SPDR = nextByte;
+		return received;
+	}
+};
+
+// aliaces for compatibility with older code
+using SpiSlave  	= Spi;
+using SpiDevice     = Spi;
+using SpiMaster		= SpiBus;
 
 #endif // AVRSPI_H

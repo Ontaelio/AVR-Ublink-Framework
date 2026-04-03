@@ -9,27 +9,26 @@
 
 ### Class naming
 
-In this API, **class names reflect the role of the device the MCU is talking to**, not the MCU’s activity, e.g.:\
-`SpiSlave w25q32;` -- `w25q32` has a _reactive_ role, it awaits a command from the MCU, and responds to it;\
-`SpiMaster stm32;` -- `stm32` has an _active_ role, the MCU awaits a command from it.\
-This documentation follows the slave/master syntax to avoid confusion. For _modern audiences(tm)_ class names aliases are provided in the library:\
-`SpiPeripheral`\
-`SpiDevice`\
-`SpiHost`\
-`SpiController`\
-Aliaces require C++11, older toolchains may not support them. Please download the latest one (ver 4.0.0+ from Microchip).
+In previous versions of this API, class names used to reflect the role of the device the MCU is talking to, not the MCU’s activity, e.g. `SpiSlave` object was used for Master mode. Current version simplified this with the `Spi` classes that assume Master mode for the MCU, as it's the most common one. Slave mode class, however, follows the previous designation and is called `SpiBus`, reflecting the role of the hardware the MCU is connected to (i.e. the bus). Older names are aliased for compatibility:
+
+`SpiSlave` == `Spi`\
+`SpiMaster` == `SpiBus`\
+`UsartSpiSlave` == `UsartSpi`\
+`SoftSpiSlave` == `SoftSpi`
+
+This documentation follows the slave/master syntax (as in datasheet) to avoid confusion caused by modern unstable renamings.
 
 ### Multiple devices
 
 If multiple slaves are connected to the SPI bus, one of the following approaches can be used:
 
-* create a `SpiSlave` object for each device, then `enable()`/`disable()` them as needed:
+* create a `Spi` object for each device, then `enable()`/`disable()` them as needed:
 
 ```C++
 DigitalPin memCsPin(...);
 DigitalPin ledCsPin(...);
-SpiSlave memChip(memCsPin);
-SpiSlave ledScreen(ledCsPin);
+Spi memChip(memCsPin);
+Spi ledScreen(ledCsPin);
 ...
 memChip.enable();
 memChip.readStream(screenArray, len);
@@ -39,12 +38,12 @@ ledScreen.writeStrean(screenArray, len);
 ledScreen.disable(); // may be omitted
 ```
 
-* create one `SpiSlave` object (e.g. `spiBus`) and switch between slaves with `begin(DigitalPin cs)`:
+* create one `Spi` object (e.g. `spiBus`) and switch between slaves with `begin(DigitalPin cs)`:
 
 ```C++
 DigitalPin memCsPin(...);
 DigitalPin ledCsPin(...);
-SpiSlave spiBus;
+Spi spiBus;
 ...
 spiBus.enable();
 spiBus.begin(memCsPin)
@@ -55,43 +54,45 @@ spiBus.begin(ledCsPin)
       .end();
 ```
 
-The first approach is recommended if different slaves use different speed/CPOL/CPHA/LSB settings, as each instance of the `SpiSlave` class keeps its configuration.
+The first approach is recommended if different slaves use different speed/CPOL/CPHA/LSB settings, as each instance of the `Spi` class keeps its configuration.
 
-## Hardware SPI - SpiSlave class
+## Hardware SPI - Master mode - Spi class
+
+The library supports full functionality of Atmega328p's SPI hardware except the Write Collision detection. The following pins are used by the hardware SPI and are configured and controlled by the `Spi` class objects:
 
 Function  | Pin | Arduino pin
 ----------|-----|------------
 MOSI      | B3  | 11
 MISO      | B4  | 12
 SCK       | B5  | 13
-SS*        | B2  | 10
+SS*       | B2  | 10
 
-_* any pin can be used as SS, default one is listed. The default SS pin must remain on OUTPUT mode during SPI operation even if unused_
+* _any pin can be used as SS, default one is listed. The default SS pin must remain in OUTPUT mode during SPI operation even if unused_
 
 ### Initialization
 
 #### Constructors
 
-**SpiSlave()** creates an object of the `SpiSlave` class with default CS (Chip Select aka Slave Select) pin (PB2 aka pin 10 on Arduino).
+**Spi()** creates an object of the `Spi` class with default CS (Chip Select aka Slave Select) pin (PB2 aka pin 10 on Arduino).
 
-**SpiSlave(DigitalPin gpin)** creates an object of the `SpiSlave` class with `gpin` as the CS pin.
+**Spi(DigitalPin gpin)** creates an object of the `Spi` class with `gpin` as the CS pin.
 
 #### Settings
 
-SpiSlave& **LSBfirst()**: LSB of the data byte transmitted first.
+Spi& **LSBfirst()**: LSB of the data byte transmitted first.
 
-SpiSlave& **MSBfirst()**: MSB of the data byte transmitted first (default).
+Spi& **MSBfirst()**: MSB of the data byte transmitted first (default).
 
-SpiSlave& **polarity(uint8_t pol)**: if `pol == 1`, SCK is high when idle, else SCK is low when idle (default 0).
+Spi& **polarity(uint8_t pol)**: if `pol == 1`, SCK is high when idle, else SCK is low when idle (default 0).
 
-SpiSlave& **phase(uint8_t ph)**: if `ph == 1`, data is sampled on the trailing edge of SCK, else on the leading edge of SCK (default 0).
+Spi& **phase(uint8_t ph)**: if `ph == 1`, data is sampled on the trailing edge of SCK, else on the leading edge of SCK (default 0).
 
-SpiSlave& **clock(uint8_t dvd)**: selects the SPI clock rate. The following macros can be used as an argument here: `SPI_DIV4`, `SPI_DIV16`, `SPI_DIV64` and `SPI_DIV128`. The number in the `DIVX` part represents the frequency divisor, as in `F_CPU/DIVX`. Default is `SPI_DIV4`.
+Spi& **clock(uint8_t dvd)**: selects the SPI clock rate. The following macros can be used as an argument here: `SPI_DIV4`, `SPI_DIV16`, `SPI_DIV64` and `SPI_DIV128`. The number in the `DIVX` part represents the frequency divisor, as in `F_CPU/DIVX`. Default is `SPI_DIV4`.
 
-SpiSlave& **speed2x()**: double the SPI speed, effectively halving the devisor (default off).
+Spi& **speed2x()**: double the SPI speed, effectively halving the devisor (default off).
 
-SpiSlave& **IRQenable()**\
-SpiSlave& **IRQdisable()**: enable/disable the SPI IRQ; see the ISR section for details.
+Spi& **IRQenable()**\
+Spi& **IRQdisable()**: enable/disable the SPI IRQ; see the ISR section for details.
 
 #### SPI activation
 
@@ -115,7 +116,7 @@ spiDevice.MSBfirst()
 
 ### Fluent interface
 
-In fluent interface, each exchange starts with begin() and finishes with end(). Most of the methods are chainable, except single read() and transfer() (returning methods) and terminating end(), e.g.:
+In fluent interface, each exchange starts with begin() and finishes with end(). Most of the methods are chainable, except returning read() and transfer(uint8_t) and terminating end(), e.g.:
 
 ```c++
 spiDevice.begin()
@@ -126,21 +127,34 @@ spiDevice.transfer(dataOut, dataIn, len)
          .end();
 ```
 
+is equal to
+
+```c++
+spiDevice.begin()
+         .write(cmd);
+         .read(responceByte);
+         .transfer(dataOut, dataIn, len)
+         .write(dataout, len)
+         .end();
+```
+
 #### Chainable methods
 
-SpiSlave& **begin()**: open SPI communication by setting CS low.
+Spi& **begin()**: open SPI communication by setting CS low.
 
-SpiSlave& **begin(DigitalPin cs_pin)**: change CS pin to `cs_pin`, then open SPI communication by setting it low
+Spi& **begin(DigitalPin cs_pin)**: change CS pin to `cs_pin`, then open SPI communication by setting it low
 
-SpiSlave& **latch()**: set CS high, them immediately set CS low.
+Spi& **latch()**: set CS high, them immediately set CS low.
 
-SpiSlave& **transfer(const uint8_t\* tx, uint8_t\* rx, uint16_t len)**: full-duplex transfer of `len` bytes from an array `tx` to SpiSlave and from SpiSlave into an array `rx`.
+Spi& **transfer(const uint8_t\* tx, uint8_t\* rx, uint16_t len)**: full-duplex transfer of `len` bytes from an array `tx` to Spi and from Spi into an array `rx`.
 
-SpiSlave& **write(uint8_t dat)**: send a single byte `dat`.
+Spi& **write(uint8_t dat)**: send a single byte `dat`.
 
-SpiSlave& **write(const uint8_t\* tx, uint16_t len)**: send `len` bytes from an array `tx`.
+Spi& **write(const uint8_t\* tx, uint16_t len)**: send `len` bytes from an array `tx`.
 
-SpiSlave& **read(uint8_t\* rx, uint16_t len)**: receive `len` bytes into an array `rx`.
+Spi& **read(uint8_t& received)**: read a single byte into `received` variable.
+
+Spi& **read(uint8_t\* rx, uint16_t len)**: receive `len` bytes into an array `rx`.
 
 #### Reading methods
 
@@ -180,8 +194,8 @@ ISR(SPI_STC_vect)
 
 This library does not provide any `attachInterrupt` routins as they are contrary to the concept of bare metal programming.
 
-SpiSlave& **IRQenable()** enables the interrupt;\
-SpiSlave& **IRQdisable()** disables the interrupt.
+Spi& **IRQenable()** enables the interrupt;\
+Spi& **IRQdisable()** disables the interrupt.
 
 Note that methods above set the ISR bit in _both_ the internal configuration variable used in `enable()` _and_ the hardware SPI control register, instantly enabling/disabling the interrupt. This feature is needed in most ISR applications to quickly change interrupt behaviour.
 
@@ -189,12 +203,67 @@ In interrupt mode, only `begin()` and `end()` from the methods above are useful,
 
 To read and write bytes, the overloaded `=` operator is used:
 
-`(SpiSlave) spiDevice = (uint8_t) value;` writes `value` into SPI data register;\
-`(uint8_t) receivedByte = (SpiSlave) spiDevice;` reads contents of SPI data register into `receivedByte`.
+`(Spi) spiDevice = (uint8_t) value;` writes `value` into SPI data register;\
+`(uint8_t) receivedByte = (Spi) spiDevice;` reads contents of SPI data register into `receivedByte`.
 
 void **clear()** clears the interrupt flag and frees the bus for the next transmission.
 
-## USART SPI - UsartSpiSlave class
+## Hardware SPI - Slave mode - SpiBus class
+
+The spi.hpp library provides full functionality for SPI Hardware in slave mode, except collision detection. The following shuld be used and are configured and controlled by the `SpiBus` class object:
+
+Function  | Pin | Arduino pin
+----------|-----|------------
+MOSI      | B3  | 11
+MISO      | B4  | 12
+SCK       | B5  | 13
+SS        | B2  | 10
+
+### Constructor
+
+**SpiBus** constructor has no arguments.
+
+### Settings
+
+Chainable configuration methods are the same as in `Spi` class except speed settings:
+
+Spi& **LSBfirst()**\
+Spi& **MSBfirst()**\
+Spi& **polarity(uint8_t pol)**\
+Spi& **phase(uint8_t ph)**\
+Spi& **IRQenable()**\
+Spi& **IRQdisable()**
+
+### SPI activation
+
+void **enable(uint8_t firstByte = 0xFF)** configures SPI pins, enables hardware SPI in Slave Mode with the settings provided, and prepares `firstByte` for transfer once the Master initiates it.
+
+void **disable()** disables hardware SPI.
+
+### ISR mode
+
+```c++
+uint8_t nextByte, receivedByte = 0xFF;
+spiBus masterBus;
+
+ISR(SPI_STC_vect){
+    receivedByte = masterBus.transfer(nextByte);
+}
+```
+
+or
+
+```c++
+ISR(SPI_STC_vect){
+    receivedByte = masterBus;
+    nextByte = processByte(receivedByte); // must be very quick to allow collision
+    masterBus = nextByte;
+}
+```
+
+### Polling mode
+
+## USART SPI - UsartSpi class
 
 USART on Atmega328p has a dedicated SPI mode. In this mode, USART capabilities are replaced with SPI ones (thus, no Serial connection possible). USART SPI can function only as a Master, and uses the following piout:
 
@@ -205,11 +274,11 @@ MISO      | D1  | 1 (TX)
 SCK       | D4  | 4
 SS        | Any | Any
 
-USART SPI library has the same interface as the Hardware SPI one. All the methods listed for `SpiSlave` can be used in the `UsartSpiSlave` class; only the object declaration needs to be changed to switch between the two. The following are two differences that should be taken into account.
+USART SPI library has the same interface as the Hardware SPI one. All the methods listed for `Spi` can be used in the `UsartSpi` class; only the object declaration needs to be changed to switch between the two. The following are two differences that should be taken into account.
 
 ### Speed settings
 
-Speed setting differ on the UART SPI, as it allows setting an exact value for the divisor, not a preset one. The formula is f_SCK = f_CPU / (2 * (set_speed + 1)). Thus, `clock()` setting in `UsartSpiSlave` accepts any value (even 16-bit) for `set_speed`. The following table shows USART SPI `clock()` values correcponding to the hardware SPI divisors:
+Speed setting differ on the UART SPI, as it allows setting an exact value for the divisor, not a preset one. The formula is f_SCK = f_CPU / (2 * (set_speed + 1)). Thus, `clock()` setting in `UsartSpi` accepts any value (even 16-bit) for `set_speed`. The following table shows USART SPI `clock()` values correcponding to the hardware SPI divisors:
 
 | Hardware SPI  |  USART SPI  |
 | ------------- |  ---------- |
@@ -229,10 +298,10 @@ USART SPI has three interrupts. The default `IRQenable()` and `IRQdisable()` con
 
 Additionally, Tx Complete and Data Register Empty interrupts are controlled by the following methods:
 
-UsartSpiSlave& **IRQenableTX()**
-UsartSpiSlave& **IRQdisableTX()**
-UsartSpiSlave& **IRQenableUDRE()**
-UsartSpiSlave& **IRQdisableUDRE()**
+UsartSpi& **IRQenableTX()**
+UsartSpi& **IRQdisableTX()**
+UsartSpi& **IRQenableUDRE()**
+UsartSpi& **IRQdisableUDRE()**
 
 These also both set and reset bits in the configuration _and_ actually enable and disable the corresponding interrupts in the hardware.
 
@@ -246,9 +315,9 @@ ISR(USART_UDRE_vect){}
 
 _Note: USART SPI pipelined read() is a tiny bit (1-2 clock ticks per byte) faster than the SPI one, as the hardware allows seamless data flow._
 
-## Software SPI - SoftSpiSlave class
+## Software SPI - SoftSpi class
 
-Software SPI utilizes the bit-bang approach to the SPI sommunication. Any pins can be used. Software SPI library has the same interface as the Hardware SPI one. All the methods listed for `SpiSlave` can be used in the `SoftSpiSlave` class; only the object declaration needs to be changed to switch between the two. The following are key differences that should be taken into account.
+Software SPI utilizes the bit-bang approach to the SPI sommunication. Any pins can be used. Software SPI library has the same interface as the Hardware SPI one. All the methods listed for `Spi` can be used in the `SoftSpi` class; only the object declaration needs to be changed to switch between the two. The following are key differences that should be taken into account.
 
 ### Mode od operation
 
@@ -258,7 +327,7 @@ Only SPI Mode 0 is supported (Sample on the Rising edge of SCK, Setup on the Fal
 
 You must declare `DigitalPin` objects for four pins: MISO, MOSI, SCK and SS. Then, pass these pins to the constructor as follows:
 
-**SoftSpiSlave (DigitalPin MISO, DigitalPin MOSI, DigitalPin SCK, DigitalPin SS)**
+**SoftSpi (DigitalPin MISO, DigitalPin MOSI, DigitalPin SCK, DigitalPin SS)**
 
 Pin modes will be applied automatically with the `enable()` method.
 
