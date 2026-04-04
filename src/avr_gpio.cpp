@@ -20,6 +20,18 @@ DigitalPin::DigitalPin(volatile uint8_t& prt, uint8_t pn, uint8_t mode){
 	*portx |= ((mode >> 1) & 1) * mask; 
 	}
 
+DigitalPin::DigitalPin(uint8_t arduinoPin, uint8_t mode){
+	uint8_t pn = arduinoPin > 13 ? (arduinoPin + 2) % 8 : arduinoPin % 8;
+	mask = 1 << pn;
+	if (arduinoPin < 8) portx = (uint8_t*)&PORTD;
+		else if (arduinoPin > 13) portx = (uint8_t*)&PORTC;
+		else portx = (uint8_t*)&PORTB;
+    volatile uint8_t* ddr = portx - 1;
+    pinx = ddr - 1;
+    *ddr  |= (mode & 1) * mask; 
+	*portx |= ((mode >> 1) & 1) * mask; 
+	}
+
 void DigitalPin::mode(uint8_t md)
     {
      *portx &= ~(mask);

@@ -3,11 +3,11 @@
 
 ## Digital pins
 
-Class **digitalPin**(volatile uint8_t& prt, uint8_t pn, uint8_t mode)\
+Class **digitalPin**(volatile uint8_t& prt, uint8_t pn, uint8_t mode = INPUT)\
 This class is used to create an object representing a single digital pin. Parameters are:\
 int8_t& **prt**: port name, e.g. `PORTD`;\
 uint8_t **pn**: pin number;\
-uint8_t **mode**: pin mode - OUTPUT, INPUT, INPUT_PULLUP.
+uint8_t **mode**: pin mode - OUTPUT, INPUT, INPUT_PULLUP; default INPUT.
 
 Here's a cheatsheet of Arduino pin names and their port-pin actual representation:
 
@@ -19,6 +19,12 @@ Here's a cheatsheet of Arduino pin names and their port-pin actual representatio
 
 Thus, to set the Arduino pin 13 (built-in LED) to output use:\
 `digitalPin led(PORTB, 5, OUTPUT)`.
+
+Alternatively (**not recommended**):
+
+**DigitalPin(uint8_t arduinoPin, uint8_t mode = INPUT)** accepts pin numbers Arduino-style (A0-A7 included).
+
+
 
 -----
 

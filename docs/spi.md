@@ -1,11 +1,29 @@
-# UBlink Atmega328p SPI libraries
+# Ublink Atmega328p SPI libraries
 
-[General](#general)\
-[Hardware SPI](#hardware-spi)
+This document covers three Atmega328p Ublink libraries:
 
-* [Hardware SPI :: Initialization](#initialization)
+* **spi.hpp** - hardware SPI, Master and Slave modes;
+* **usart_spi.hpp** - USART SPI, Master mode only (hardware limitation);
+* **soft_spi.hpp** - software (bit-bang) SPI, Master and SPI Mode 0 only.
 
-## General
+-------
+
+[General Info](#general-info)
+
+[Hardware SPI - Master mode - Spi class](#hardware-spi---master-mode---spi-class)
+
+* [Initialization](#initialization)
+* [Fluent interface](#fluent-interface)
+* [Transactional interface](#transactional-interface)
+* [ISR methods](#isr-methods)
+
+[Hardware SPI - Slave mode - SpiBus class](#hardware-spi---slave-mode---spibus-class)
+
+[USART SPI - UsartSpi class](#usart-spi---usartspi-class)
+
+[Software SPI - SoftSpi class](#software-spi---softspi-class)
+
+## General Info
 
 ### Class naming
 
@@ -56,6 +74,8 @@ spiBus.begin(ledCsPin)
 
 The first approach is recommended if different slaves use different speed/CPOL/CPHA/LSB settings, as each instance of the `Spi` class keeps its configuration.
 
+This applies to `UsartSpi` and `SoftSpi` classes, too.
+
 ## Hardware SPI - Master mode - Spi class
 
 The library supports full functionality of Atmega328p's SPI hardware except the Write Collision detection. The following pins are used by the hardware SPI and are configured and controlled by the `Spi` class objects:
@@ -67,7 +87,7 @@ MISO      | B4  | 12
 SCK       | B5  | 13
 SS*       | B2  | 10
 
-* _any pin can be used as SS, default one is listed. The default SS pin must remain in OUTPUT mode during SPI operation even if unused_
+\* _any pin can be used as SS, default one is listed. The default SS pin must remain in OUTPUT mode during SPI operation even if unused._
 
 ### Initialization
 
@@ -79,20 +99,20 @@ SS*       | B2  | 10
 
 #### Settings
 
-Spi& **LSBfirst()**: LSB of the data byte transmitted first.
+**LSBfirst()**: LSB of the data byte transmitted first.
 
-Spi& **MSBfirst()**: MSB of the data byte transmitted first (default).
+**MSBfirst()**: MSB of the data byte transmitted first (default).
 
-Spi& **polarity(uint8_t pol)**: if `pol == 1`, SCK is high when idle, else SCK is low when idle (default 0).
+**polarity(uint8_t pol)**: if `pol == 1`, SCK is high when idle, else SCK is low when idle (default 0).
 
-Spi& **phase(uint8_t ph)**: if `ph == 1`, data is sampled on the trailing edge of SCK, else on the leading edge of SCK (default 0).
+**phase(uint8_t ph)**: if `ph == 1`, data is sampled on the trailing edge of SCK, else on the leading edge of SCK (default 0).
 
-Spi& **clock(uint8_t dvd)**: selects the SPI clock rate. The following macros can be used as an argument here: `SPI_DIV4`, `SPI_DIV16`, `SPI_DIV64` and `SPI_DIV128`. The number in the `DIVX` part represents the frequency divisor, as in `F_CPU/DIVX`. Default is `SPI_DIV4`.
+**clock(uint8_t dvd)**: selects the SPI clock rate. The following macros can be used as an argument here: `SPI_DIV4`, `SPI_DIV16`, `SPI_DIV64` and `SPI_DIV128`. The number in the `DIVX` part represents the frequency divisor, as in `F_CPU/DIVX`. Default is `SPI_DIV4`.
 
-Spi& **speed2x()**: double the SPI speed, effectively halving the devisor (default off).
+**speed2x()**: double the SPI speed, effectively halving the devisor (default off).
 
-Spi& **IRQenable()**\
-Spi& **IRQdisable()**: enable/disable the SPI IRQ; see the ISR section for details.
+**IRQenable()**\
+**IRQdisable()**: enable/disable the SPI IRQ; see the ISR section for details.
 
 #### SPI activation
 
@@ -121,9 +141,9 @@ In fluent interface, each exchange starts with begin() and finishes with end(). 
 ```c++
 spiDevice.begin()
          .write(cmd);
-responceByte = spiDevice.read();
+responseByte = spiDevice.read();
 spiDevice.transfer(dataOut, dataIn, len)
-         .write(dataout, len)
+         .write(dataOut, len)
          .end();
 ```
 
@@ -132,29 +152,29 @@ is equal to
 ```c++
 spiDevice.begin()
          .write(cmd);
-         .read(responceByte);
+         .read(responseByte);
          .transfer(dataOut, dataIn, len)
-         .write(dataout, len)
+         .write(dataOut, len)
          .end();
 ```
 
 #### Chainable methods
 
-Spi& **begin()**: open SPI communication by setting CS low.
+**begin()**: open SPI communication by setting CS low.
 
-Spi& **begin(DigitalPin cs_pin)**: change CS pin to `cs_pin`, then open SPI communication by setting it low
+**begin(DigitalPin cs_pin)**: change CS pin to `cs_pin`, then open SPI communication by setting it low
 
-Spi& **latch()**: set CS high, them immediately set CS low.
+**latch()**: set CS high, then immediately set CS low.
 
-Spi& **transfer(const uint8_t\* tx, uint8_t\* rx, uint16_t len)**: full-duplex transfer of `len` bytes from an array `tx` to Spi and from Spi into an array `rx`.
+**transfer(const uint8_t\* tx, uint8_t\* rx, uint16_t len)**: full-duplex transfer of `len` bytes from an array `tx` to Spi and from Spi into an array `rx`.
 
-Spi& **write(uint8_t dat)**: send a single byte `dat`.
+**write(uint8_t dat)**: send a single byte `dat`.
 
-Spi& **write(const uint8_t\* tx, uint16_t len)**: send `len` bytes from an array `tx`.
+**write(const uint8_t\* tx, uint16_t len)**: send `len` bytes from an array `tx`.
 
-Spi& **read(uint8_t& received)**: read a single byte into `received` variable.
+**read(uint8_t& received)**: read a single byte into `received` variable.
 
-Spi& **read(uint8_t\* rx, uint16_t len)**: receive `len` bytes into an array `rx`.
+**read(uint8_t\* rx, uint16_t len)**: receive `len` bytes into an array `rx`.
 
 #### Reading methods
 
@@ -192,7 +212,7 @@ ISR(SPI_STC_vect)
 
 ```
 
-This library does not provide any `attachInterrupt` routins as they are contrary to the concept of bare metal programming.
+This library does not provide any `attachInterrupt` routines as they are contrary to the concept of bare metal programming.
 
 Spi& **IRQenable()** enables the interrupt;\
 Spi& **IRQdisable()** disables the interrupt.
@@ -242,9 +262,17 @@ void **disable()** disables hardware SPI.
 
 ### ISR mode
 
+Overloaded `=` operator reads the transmitted byte and sets a new byte for the upcoming transmission.
+
+uint8_t **transfer(uint8_t nextByte = 255)** returns a received byte and prepares `nextByte` for the upcoming transmission.
+
+void **clear()** clears the interrupt flag and frees the bus.
+
+ISR mode usage:
+
 ```c++
-uint8_t nextByte, receivedByte = 0xFF;
-spiBus masterBus;
+uint8_t receivedByte, nextByte = 0xFF;
+SpiBus masterBus;
 
 ISR(SPI_STC_vect){
     receivedByte = masterBus.transfer(nextByte);
@@ -263,6 +291,8 @@ ISR(SPI_STC_vect){
 
 ### Polling mode
 
+uint8_t **await(uint8_t nextByte = 255)** waits for incoming transmission, returns a received byte and prepares `nextByte` for the upcoming transmission.
+
 ## USART SPI - UsartSpi class
 
 USART on Atmega328p has a dedicated SPI mode. In this mode, USART capabilities are replaced with SPI ones (thus, no Serial connection possible). USART SPI can function only as a Master, and uses the following piout:
@@ -274,21 +304,25 @@ MISO      | D1  | 1 (TX)
 SCK       | D4  | 4
 SS        | Any | Any
 
-USART SPI library has the same interface as the Hardware SPI one. All the methods listed for `Spi` can be used in the `UsartSpi` class; only the object declaration needs to be changed to switch between the two. The following are two differences that should be taken into account.
+USART SPI library has the same interface as the Hardware SPI one. All the methods listed for `Spi` can be used in the `UsartSpi` class; only the object declaration needs to be changed to switch between the two:
+
+**UsartSpi(digitalPin ssPin)** - providing the SS pin is obligatory, as there's no default one.
+
+The following are two differences that should be taken into account.
 
 ### Speed settings
 
 Speed setting differ on the UART SPI, as it allows setting an exact value for the divisor, not a preset one. The formula is f_SCK = f_CPU / (2 * (set_speed + 1)). Thus, `clock()` setting in `UsartSpi` accepts any value (even 16-bit) for `set_speed`. The following table shows USART SPI `clock()` values correcponding to the hardware SPI divisors:
 
-| Hardware SPI  |  USART SPI  |
-| ------------- |  ---------- |
-| SPI_DIV4, 2x  |  0          |
-| SPI_DIV4      |  1          |
-| SPI_DIV16, 2x |  3          |
-| SPI_DIV16     |  7          |
-| SPI_DIV64, 2x |  15         |
-| SPI_DIV64     |  31         |
-| SPI_DIV128    |  63         |
+Hardware SPI  |  USART SPI
+------------- |  ----------
+SPI_DIV4, 2x  |  0
+SPI_DIV4      |  1
+SPI_DIV16, 2x |  3
+SPI_DIV16     |  7
+SPI_DIV64, 2x |  15
+SPI_DIV64     |  31
+SPI_DIV128    |  63
 
 `speed2x()` method will alwasys set the maximum transmission speed (f_CPU/2).
 
@@ -317,9 +351,9 @@ _Note: USART SPI pipelined read() is a tiny bit (1-2 clock ticks per byte) faste
 
 ## Software SPI - SoftSpi class
 
-Software SPI utilizes the bit-bang approach to the SPI sommunication. Any pins can be used. Software SPI library has the same interface as the Hardware SPI one. All the methods listed for `Spi` can be used in the `SoftSpi` class; only the object declaration needs to be changed to switch between the two. The following are key differences that should be taken into account.
+Software SPI utilizes the bit-bang approach to the SPI sommunication. Any pins can be used. Software SPI library has the same interface as the Hardware SPI one. All the methods listed for `Spi` can be used in the `SoftSpi` class; only the object declaration needs to be changed to switch between the two. The following are the key differences that should be taken into account.
 
-### Mode od operation
+### Mode of operation
 
 Only SPI Mode 0 is supported (Sample on the Rising edge of SCK, Setup on the Falling edge).
 
@@ -327,7 +361,7 @@ Only SPI Mode 0 is supported (Sample on the Rising edge of SCK, Setup on the Fal
 
 You must declare `DigitalPin` objects for four pins: MISO, MOSI, SCK and SS. Then, pass these pins to the constructor as follows:
 
-**SoftSpi (DigitalPin MISO, DigitalPin MOSI, DigitalPin SCK, DigitalPin SS)**
+**SoftSpi** (DigitalPin MISO, DigitalPin MOSI, DigitalPin SCK, DigitalPin SS)
 
 Pin modes will be applied automatically with the `enable()` method.
 
@@ -353,6 +387,6 @@ This Software SPI will try to work as fast as possible, taking around 25-27 MCU 
  3          | 35        | 280            | 457 kHz
  5          | 41        | 328            | 390 kHz
 
-**Note:** while `SOFTSPI_DELAY()` will decrease the overall speed thrice, it will decrease the MISO sampling time only once, as the three occurences are spread throught the transfer routine.
+**Note:** while `SOFTSPI_DELAY()` will decrease the overall speed thrice, it will decrease the MISO sampling time only once, as the three occurences are spread throughout the transfer routine.
 
 For even slower operation, `_delay_ns` or even `_delay_ms` can be used in `SOFTSPI_DELAY()`.

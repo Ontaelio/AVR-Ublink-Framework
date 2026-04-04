@@ -17,6 +17,38 @@
 #define INPUT_PULLUP 0x2
 #endif
 
+#ifndef A0
+#define A0 14
+#endif
+
+#ifndef A1
+#define A1 15
+#endif
+
+#ifndef A2
+#define A2 16
+#endif
+
+#ifndef A3
+#define A3 17
+#endif
+
+#ifndef A4
+#define A4 18
+#endif
+
+#ifndef A5
+#define A5 19
+#endif
+
+#ifndef A6
+#define A6 20
+#endif
+
+#ifndef A7
+#define A7 21
+#endif
+
 // macros for externalIRQ() digitalPin method, include on/off bit
 #define PIN_LOW		0x4
 #define PIN_CHANGE	0x5

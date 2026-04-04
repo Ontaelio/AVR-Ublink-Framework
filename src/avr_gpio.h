@@ -27,7 +27,8 @@ private:
 	uint8_t mask;
 
 public:
-	DigitalPin(volatile uint8_t& prt, uint8_t pn, uint8_t mode);
+	DigitalPin(volatile uint8_t& prt, uint8_t pn, uint8_t mode = INPUT);
+	DigitalPin(uint8_t arduinoPin, uint8_t mode = INPUT);
 	inline void high()  {*portx |= mask;}
     inline void low()   {*portx &= ~mask;}
     inline void set()   {high();}
