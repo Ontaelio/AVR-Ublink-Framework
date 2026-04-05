@@ -198,24 +198,24 @@ public:
 	uint16_t readData(){return read();}
 };
 
-class SpiBus{
+class SpiNode{
 private:
     uint8_t cfg = 0; 
 
 public:
-	SpiBus() {}
+	SpiNode() {}
     
 // interface
 
-	inline SpiBus& LSBfirst() {cfg |= (1 << DORD); return *this;}
-	inline SpiBus& MSBfirst() {cfg &= ~(1 << DORD); return *this;}
-	inline SpiBus& polarity(uint8_t pol) {
+	inline SpiNode& LSBfirst() {cfg |= (1 << DORD); return *this;}
+	inline SpiNode& MSBfirst() {cfg &= ~(1 << DORD); return *this;}
+	inline SpiNode& polarity(uint8_t pol) {
 		cfg = (cfg & ~(1 << CPOL)) | ((pol ? 1 : 0) << CPOL); return *this;}
-	inline SpiBus& phase(uint8_t ph) {
+	inline SpiNode& phase(uint8_t ph) {
 		cfg = (cfg & ~(1 << CPHA)) | ((ph ? 1 : 0) << CPHA); return *this;}
 
-	inline SpiBus& IRQenable() {cfg |= (1 << SPIE); SPCR |= (1 << SPIE); return *this;}
-	inline SpiBus& IRQdisable() {cfg &= ~(1 << SPIE); SPCR &= ~(1 << SPIE); return *this;}
+	inline SpiNode& IRQenable() {cfg |= (1 << SPIE); SPCR |= (1 << SPIE); return *this;}
+	inline SpiNode& IRQdisable() {cfg &= ~(1 << SPIE); SPCR &= ~(1 << SPIE); return *this;}
 
 	inline void enable(uint8_t firstByte = 255) {
 		DDRB &= ~((1 << PB5) | (1 << PB3) | (1 << PB2)); // SCK, MOSI, SS = input
@@ -229,7 +229,7 @@ public:
 
 // ISR mode
 
-	inline SpiBus& operator= (const uint8_t& dat) {SPDR = dat; return *this;}
+	inline SpiNode& operator= (const uint8_t& dat) {SPDR = dat; return *this;}
 	inline operator uint8_t() {void(SPSR); return SPDR;}
 	inline void clear() {(void)SPSR; (void)SPDR;}	
 	
@@ -252,6 +252,6 @@ public:
 // aliaces for compatibility with older code
 using SpiSlave  	= Spi;
 using SpiDevice     = Spi;
-using SpiMaster		= SpiBus;
+using SpiMaster		= SpiNode;
 
 #endif // AVRSPI_H

@@ -6,9 +6,14 @@ This document covers three Atmega328p Ublink libraries:
 * **usart_spi.hpp** - USART SPI, Master mode only (hardware limitation);
 * **soft_spi.hpp** - software (bit-bang) SPI, Master and SPI Mode 0 only.
 
+All three are header only, no pre-compilation required.
+
 -------
 
 [General Info](#general-info)
+
+*[Class naming](#class-naming)
+*[Multiple devices](#multiple-devices)
 
 [Hardware SPI - Master mode - Spi class](#hardware-spi---master-mode---spi-class)
 
@@ -17,7 +22,7 @@ This document covers three Atmega328p Ublink libraries:
 * [Transactional interface](#transactional-interface)
 * [ISR methods](#isr-methods)
 
-[Hardware SPI - Slave mode - SpiBus class](#hardware-spi---slave-mode---spibus-class)
+[Hardware SPI - Slave mode - SpiNode class](#hardware-spi---slave-mode---spinode-class)
 
 [USART SPI - UsartSpi class](#usart-spi---usartspi-class)
 
@@ -27,10 +32,10 @@ This document covers three Atmega328p Ublink libraries:
 
 ### Class naming
 
-In previous versions of this API, class names used to reflect the role of the device the MCU is talking to, not the MCU’s activity, e.g. `SpiSlave` object was used for Master mode. Current version simplified this with the `Spi` classes that assume Master mode for the MCU, as it's the most common one. Slave mode class, however, follows the previous designation and is called `SpiBus`, reflecting the role of the hardware the MCU is connected to (i.e. the bus). Older names are aliased for compatibility:
+In previous versions of this API, class names used to reflect the role of the device the MCU is talking to, not the MCU’s activity, e.g. `SpiSlave` object was used for Master mode. Current version simplified this with the `Spi` classes that assume Master mode for the MCU, as it's the most common one. Older names are aliased for compatibility:
 
 `SpiSlave` == `Spi`\
-`SpiMaster` == `SpiBus`\
+`SpiMaster` == `SpiNode`\
 `UsartSpiSlave` == `UsartSpi`\
 `SoftSpiSlave` == `SoftSpi`
 
@@ -162,7 +167,7 @@ spiDevice.begin()
 
 **begin()**: open SPI communication by setting CS low.
 
-**begin(DigitalPin cs_pin)**: change CS pin to `cs_pin`, then open SPI communication by setting it low
+**begin(DigitalPin cs_pin)**: change CS pin to `cs_pin`, then open SPI communication by setting it low.
 
 **latch()**: set CS high, then immediately set CS low.
 
@@ -228,9 +233,9 @@ To read and write bytes, the overloaded `=` operator is used:
 
 void **clear()** clears the interrupt flag and frees the bus for the next transmission.
 
-## Hardware SPI - Slave mode - SpiBus class
+## Hardware SPI - Slave mode - SpiNode class
 
-The spi.hpp library provides full functionality for SPI Hardware in slave mode, except collision detection. The following shuld be used and are configured and controlled by the `SpiBus` class object:
+The spi.hpp library provides full functionality for SPI Hardware in slave mode, except collision detection. The following shuld be used and are configured and controlled by the `SpiNode` class object:
 
 Function  | Pin | Arduino pin
 ----------|-----|------------
@@ -241,7 +246,7 @@ SS        | B2  | 10
 
 ### Constructor
 
-**SpiBus** constructor has no arguments.
+**SpiNode** constructor has no arguments.
 
 ### Settings
 
@@ -272,7 +277,7 @@ ISR mode usage:
 
 ```c++
 uint8_t receivedByte, nextByte = 0xFF;
-SpiBus masterBus;
+SpiNode masterBus;
 
 ISR(SPI_STC_vect){
     receivedByte = masterBus.transfer(nextByte);
