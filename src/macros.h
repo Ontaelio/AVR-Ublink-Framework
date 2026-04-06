@@ -157,7 +157,46 @@
  *  TWI (I2C)
  * ========================================================= */
 
+// private
 #define TW_WRITE 0
 #define TW_READ  1
+
+// public: prescalers
+#define I2C_PSC1  0x00
+#define I2C_PSC4  0x01
+#define I2C_PSC16 0x02
+#define I2C_PSC64 0x03
+
+// public: Error/state codes
+// Generic results
+#define I2C_OK                     0x00
+
+// Internal / software errors (never overlap with TWSR)
+#define I2C_START_TIMEOUT          0x01  // ping - START timeout
+#define I2C_SLA_TIMEOUT            0x02  // ping - SLA timeout
+#define I2C_BUS_ERROR              0x03  // bus error, including illegal start/stop error
+
+// Master mode - transmitter
+#define I2C_START_TRANSMITTED      0x08
+#define I2C_REP_START_TRANSMITTED  0x10
+
+#define I2C_MT_SLA_ACK             0x18  // SLA+W transmitted, ACK received
+#define I2C_MT_SLA_NACK            0x20  // SLA+W transmitted, NACK received
+
+#define I2C_MT_DATA_ACK            0x28  // data transmitted, ACK received
+#define I2C_MT_DATA_NACK           0x30  // data transmitted, NACK received
+
+#define I2C_MT_ARB_LOST            0x38  // arbitration lost
+
+// Master mode - receiver
+#define I2C_MR_SLA_ACK             0x40  // SLA+R transmitted, ACK received
+#define I2C_MR_SLA_NACK            0x48  // SLA+R transmitted, NACK received
+
+#define I2C_MR_DATA_ACK            0x50  // data received, ACK returned
+#define I2C_MR_DATA_NACK           0x58  // data received, NACK returned
+
+// general errors
+#define I2C_NO_INFO                0xF8
+#define I2C_ILLEGAL_SS             0x00  // illegal START/STOP
 
 #endif // UBLINK_MACROS_H_

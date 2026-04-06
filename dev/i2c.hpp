@@ -17,195 +17,173 @@
 #include <avr/io.h>
 #include <avr_gpio.h>
 #include <macros.h>
-#include <avr/delay.h>
+#include <util/delay.h>
 
+/* ------------------------
+ *   Standalone functions
+ * -----------------------*/
 
+//setup
 
-
-uint8_t i2c_start(){
-    // 1. Start | Enable | Clear TWINT
-    TWCR = (1<<TWSTA) | (1<<TWEN) | (1<<TWINT);
-
-    // 2. Wait for flag
-    while (!(TWCR & (1<<TWINT)));
-
-    // 3. Status 0x08 means START has been transmitted
-    //    0x10 means repeated START has been transmitted
-    uint8_t status = TWSR & 0xF8;
-    if (status == 0x08) {return 0;}
-    return 1;
+inline void i2c_setFreq(uint32_t scl_freq){
+    uint32_t twbr = ((F_CPU / scl_freq) - 16) / 2; // calculate TWBR
+    TWBR = (uint8_t)twbr;
 }
 
-uint8_t i2c_addr2write(uint8_t slave_addr){
-    // 1. 7-bit address | READ/WRITE bit (read = 1)
-    TWDR = (slave_addr << 1) | 0; //TW_WRITE == 0, TW_READ == 1
+inline void i2c_init(uint32_t scl_freq = 100000) {    
+    TWSR &= ~((1<<TWPS0) | (1<<TWPS1)); // prescaler = 1
+    i2c_setFreq( scl_freq);    
+    TWCR = (1<<TWEN); // enable TWI
+}
 
-    // 2. Enable | Clear TWINT; enable not necessary, but doesn't hurt
-    TWCR = (1<<TWEN) | (1<<TWINT);
+inline void i2c_setPrescaler(uint8_t ps) {TWSR = (TWSR & ~0x03) | (ps & 0x03);}
+inline void i2c_IRQenable() {TWCR |= (1 << TWIE);}
+inline void i2c_IRQdisable() {TWCR &= ~(1 << TWIE);}
 
-    // 3. Wait for flag
-    while (!(TWCR & (1<<TWINT)));
+//troubleshooting
 
-    // 4. ACK check. Errors: 0x20 SLA+W was sent, NOT ACK received. 0x48: SLA+R sent, NOT ACK received
-    //               Errors: 0x40 Arbitration lost in SLA+R or NOT ACK
+uint8_t i2c_resetBus();
+uint8_t i2c_ping(uint8_t addr);
+uint8_t i2c_scanAddr(uint8_t startAddr = 0x07);
+
+// START and STOP
+
+inline uint8_t i2c_start(){    
+    TWCR = (1<<TWSTA) | (1<<TWEN) | (1<<TWINT); // Start | Enable | Clear TWINT
+    while (!(TWCR & (1<<TWINT))); // Wait for flag
     uint8_t status = TWSR & 0xF8;
-    if ((TWDR & 1) == 0) { // just for now, checks whether we wanted to read or write
-        if (status == 0x18) { return 0; /* SLA+W ACK ok*/ }
-    } else {
-        if (status == 0x40) { return 0; /* SLA+R ACK ok*/ }
-    }
+    if (status == I2C_START_TRANSMITTED) return I2C_OK;
+    if (status == 0) return I2C_BUS_ERROR;
     return status;
 }
 
-uint8_t i2c_writeByte(uint8_t dataByte){
-    TWDR = dataByte;
-    TWCR = (1<<TWEN) | (1<<TWINT); // TWEN not needed but doesn't hurt
+inline uint8_t i2c_repeatedStart(){
+    TWCR = (1<<TWSTA) | (1<<TWEN) | (1<<TWINT); // same as start
     while (!(TWCR & (1<<TWINT)));
     uint8_t status = TWSR & 0xF8;
-    if (status == 0x28) { return 0; /* Data ACK */ }
-    return status; // error happened
+    if (status != I2C_REP_START_TRANSMITTED) return status; /* Repeated START failed somehow*/
+    if (status == 0) return I2C_BUS_ERROR;
+    return status;
 }
 
-uint8_t i2c_repeatedStart(uint8_t slave_addr){
-    // 1. REPEATED START, same as start
-    TWCR = (1<<TWSTA) | (1<<TWEN) | (1<<TWINT);
-    while (!(TWCR & (1<<TWINT)));
-    uint8_t status = TWSR & 0xF8;
-    if (status != 0x10) return status; /* Repeated START failed somehow*/
-
-    TWDR = (slave_addr << 1) | 1; // TW_READ
-    TWCR = (1<<TWEN) | (1<<TWINT);
-    while (!(TWCR & (1<<TWINT)));
-    status = TWSR & 0xF8;
-    if (status != 0x40) return status; /* SLA+R ACK failed*/
-    return 0;
-}
-
-uint8_t i2c_readStream(uint8_t* data, uint8_t len) {
-    if (len == 0) return 0;
-
-    for (uint8_t i = 0; i < len; i++) {
-        if (i < (len - 1)) {
-            // All except the last with ACK
-            TWCR = (1<<TWEN) | (1<<TWINT) | (1<<TWEA);
-        } else {
-            // Last byte with NACK
-            TWCR = (1<<TWEN) | (1<<TWINT);
-        }
-
-        while (!(TWCR & (1<<TWINT)));
-
-        uint8_t status = TWSR & 0xF8;
-        // 0x50 = Data received, ACK returned
-        // 0x58 = Data received, NACK returned
-        if (!((status == 0x50) || (status == 0x58))) return status;
-
-        data[i] = TWDR; 
-    }
-
-    return 0; 
-}
-
-void i2c_stop(){
+inline void i2c_stop(){
     TWCR = (1<<TWSTO) | (1<<TWEN) | (1<<TWINT);
 }
 
-// slave_addr already set to SLA+W, START sent
-uint8_t i2c_writeStream(uint8_t* data, uint8_t len) {
-    for (uint8_t i = 0; i < len; i++) {
-        TWDR = data[i];                 // 1. load a byte
-        TWCR = (1<<TWEN) | (1<<TWINT); // 2. clear flag
-        while (!(TWCR & (1<<TWINT)));  // 3. wait for flag
+// communication
 
-        uint8_t status = TWSR & 0xF8;  // 4. check ACK
-        if (status != 0x28) return status; // 0x28 = Data ACK ok, else return error
-    }
-    return 0; // all done
-}
+uint8_t i2c_addrWrite(uint8_t slave_addr);
+uint8_t i2c_addrWrite10(uint16_t addr);
+uint8_t i2c_addrRead(uint8_t slave_addr);
+uint8_t i2c_addrRead10(uint16_t addr);
+uint8_t i2c_writeByte(uint8_t dataByte);
+uint8_t i2c_writeLast(uint8_t dataByte); // compatibility
+uint8_t i2c_writeStream(uint8_t* data, uint8_t len);
+uint8_t i2c_readByte(uint8_t& dataByte); // returns ok/error, not byte; sends ACK
+uint8_t i2c_readLast(uint8_t& dataByte); // sends NACK
+uint8_t i2c_readStream(uint8_t* data, uint8_t len);
 
-uint8_t i2c_resetBus(){
-    // disable TWI
-    TWCR &= ~(1 << TWEN);
 
-    // SDA input
-    DDRC &= ~(1 << PC4);
+/* ------------------------
+ *   Class
+ * -----------------------*/
 
-    // SCL released (input)
-    DDRC &= ~(1 << PC5);
+class Twi{
+private:
+    uint8_t device_addr, word_addr;
 
-    // if SDA is HIGH, everything's fine
-    if (PINC & (1 << PC4)) return 0;
+public:
+    Twi(uint8_t addr, uint8_t reglen = 8) : device_addr(addr), word_addr(reglen) {}
 
-    for (uint8_t i = 0; i < 9; i++)
-    {
-        // SCL LOW
-        DDRC |= (1 << PC5);
-        PORTC &= ~(1 << PC5);
-        _delay_us(5);
+    void init(uint32_t scl_freq = 100000) {i2c_init(scl_freq);}
 
-        // SCL HIGH (release)
-        DDRC &= ~(1 << PC5);
-        _delay_us(5);
-
-        // check SDA
-        if (PINC & (1 << PC4))
-        {
-            // START: SDA LOW while SCL HIGH
-            DDRC |= (1 << PC4);
-            PORTC &= ~(1 << PC4);
-            _delay_us(5);
-
-            // STOP: SDA HIGH while SCL HIGH
-            DDRC &= ~(1 << PC4);
-            _delay_us(5);
-
-            return 0;
-        }
+    void write(uint16_t addr, uint8_t stuff) {
+        i2c_start();
+        i2c_addrWrite(device_addr);
+        i2c_writeByte(addr);
+        i2c_writeByte(stuff);
+        i2c_stop();
     }
 
-    return 1;
-}
-
-uint8_t i2c_ping(uint8_t slave_addr) {
-    volatile uint16_t timeout = 0xFFFF;
-
-    // 1. START
-    TWCR = (1<<TWSTA) | (1<<TWEN) | (1<<TWINT);
-    while (!(TWCR & (1<<TWINT))) {
-        if (--timeout == 0) return 1; // START timeout
+	void write16(uint16_t addr, uint16_t stuff){
+        i2c_start();
+        i2c_addrWrite(device_addr);
+        i2c_writeByte(addr);
+        i2c_writeByte(stuff>>8);
+        i2c_writeByte(stuff&0xFF);
+        i2c_stop();
     }
 
-    uint8_t status = TWSR & 0xF8;
-    if (status != 0x08) return status; // START failed
-
-    // 2. SLA+W
-    TWDR = (slave_addr << 1) | TW_WRITE;
-    TWCR = (1<<TWEN) | (1<<TWINT);
-    timeout = 0xFFFF;
-    while (!(TWCR & (1<<TWINT))) {
-        if (--timeout == 0) return 2; // SLA timeout
+	void write32(uint16_t addr, uint32_t stuff){
+        i2c_start();
+        i2c_addrWrite(device_addr);
+        i2c_writeByte(addr);
+        i2c_writeByte(stuff>>24);
+        i2c_writeByte(stuff>>16);
+        i2c_writeByte(stuff>>8);
+        i2c_writeByte(stuff&0xFF);
+        i2c_stop();
     }
 
-    status = TWSR & 0xF8;
-    if (status == 0x18) {
-        // SLA+W ACK ok
-        TWCR = (1<<TWEN) | (1<<TWINT) | (1<<TWSTO); // generate STOP
-        return 0;
-    }
-    else if (status == 0x20) {
-        // SLA+W NACK
-        TWCR = (1<<TWEN) | (1<<TWINT) | (1<<TWSTO); // generate STOP
-        return 3;
-    }
-    else if (status == 0x38) {
-        // Arbitration lost
-        TWCR = (1<<TWEN) | (1<<TWINT) | (1<<TWSTO); // STOP
-        return 4;
+	void writeStream(uint16_t addr, uint8_t* stuff, uint8_t num){
+        i2c_start();
+        i2c_addrWrite(device_addr);
+        i2c_writeByte(addr);
+        i2c_writeStream(stuff, num);
+        i2c_stop();
     }
 
-    // Any other error
-    TWCR = (1<<TWEN) | (1<<TWINT) | (1<<TWSTO);
-    return status;
-}
+	uint8_t read(uint16_t addr){
+        uint8_t res;
+        i2c_start();
+        i2c_addrWrite(device_addr);
+        i2c_writeByte(addr);
+        i2c_repeatedStart();
+        i2c_addrRead(device_addr);
+        i2c_readLast(res);
+        i2c_stop();
+        return res;
+    }
+
+	uint16_t read16(uint16_t addr){
+        uint8_t res1, res2;
+        i2c_start();
+        i2c_addrWrite(device_addr);
+        i2c_writeByte(addr);
+        i2c_repeatedStart();
+        i2c_addrRead(device_addr);
+        i2c_readByte(res1);
+        i2c_readLast(res2);
+        i2c_stop();
+        return (((uint16_t)res1 << 8) | (res2)); // big endian only
+    }
+
+	uint32_t read32(uint16_t addr){
+        uint8_t res1, res2, res3, res4;
+        i2c_start();
+        i2c_addrWrite(device_addr);
+        i2c_writeByte(addr);
+        i2c_repeatedStart();
+        i2c_addrRead(device_addr);
+        i2c_readByte(res1);
+        i2c_readByte(res2);
+        i2c_readByte(res3);
+        i2c_readLast(res4);
+        i2c_stop();
+        return (((uint32_t)res1 << 24) | ((uint32_t)res2 << 16) | ((uint32_t)res3 << 8) | res4);
+    }
+
+	void readStream(uint16_t addr, uint8_t* arr, uint8_t num){
+        i2c_start();
+        i2c_addrWrite(device_addr);
+        i2c_writeByte(addr);
+        i2c_repeatedStart();
+        i2c_addrRead(device_addr);
+        i2c_readStream(arr, num);
+        i2c_stop();
+    }
+
+
+};
 
 #endif // UBLINK_AVRTWI
