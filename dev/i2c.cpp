@@ -102,8 +102,6 @@ uint8_t i2c_scanAddr(uint8_t startAddr){
     uint8_t a;
 	while (startAddr < 0x77)	{
 		startAddr++;
-        //return i2c_ping(startAddr);
-		//if (i2c_ping(startAddr) == 0) return 254; //startAddr;
         a = i2c_ping(startAddr);
         if (a == 0) return startAddr;
 	}
@@ -257,3 +255,56 @@ uint8_t i2c_writeStream(uint8_t* data, uint8_t len) {
     return 0; // all done
 }
 
+void Twi::write16(uint16_t addr, uint16_t stuff, uint8_t littleEndian){
+    startAndSendRegisterAddress(addr);
+    if (littleEndian){
+        i2c_writeByte(stuff&0xFF);
+        i2c_writeByte(stuff>>8);            
+    } else {
+        i2c_writeByte(stuff>>8);
+        i2c_writeByte(stuff&0xFF);
+    }
+    i2c_stop();
+}
+
+void Twi::write32(uint16_t addr, uint32_t stuff, uint8_t littleEndian){
+    startAndSendRegisterAddress(addr);
+    if (littleEndian){
+        i2c_writeByte(stuff&0xFF);
+        i2c_writeByte(stuff>>8);
+        i2c_writeByte(stuff>>16);
+        i2c_writeByte(stuff>>24);
+    } else {
+        i2c_writeByte(stuff>>24);
+        i2c_writeByte(stuff>>16);
+        i2c_writeByte(stuff>>8);
+        i2c_writeByte(stuff&0xFF);
+    }
+    i2c_stop();
+}
+
+uint16_t Twi::read16(uint16_t addr, uint8_t littleEndian){
+        uint8_t res1, res2;
+        startAndSendRegisterAddress(addr);
+        i2c_repeatedStart();
+        i2c_addrRead(device_addr);
+        i2c_readByte(res1);
+        i2c_readLast(res2);
+        i2c_stop();
+        if (littleEndian) return (((uint16_t)res2 << 8) | (res1));
+        else return (((uint16_t)res1 << 8) | (res2));
+    }
+
+	uint32_t Twi::read32(uint16_t addr, uint8_t littleEndian){
+        uint8_t res1, res2, res3, res4;
+        startAndSendRegisterAddress(addr);
+        i2c_repeatedStart();
+        i2c_addrRead(device_addr);
+        i2c_readByte(res1);
+        i2c_readByte(res2);
+        i2c_readByte(res3);
+        i2c_readLast(res4);
+        i2c_stop();
+        if (littleEndian) return (((uint32_t)res4 << 24) | ((uint32_t)res3 << 16) | ((uint32_t)res2 << 8) | res1);
+        else return (((uint32_t)res1 << 24) | ((uint32_t)res2 << 16) | ((uint32_t)res3 << 8) | res4);
+    }

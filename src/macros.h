@@ -167,6 +167,10 @@
 #define I2C_PSC16 0x02
 #define I2C_PSC64 0x03
 
+// public: big- and little-endian
+#define I2C_MSB_FIRST 0x00
+#define I2C_LSB_FIRST 0x01
+
 // public: Error/state codes
 // Generic results
 #define I2C_OK                     0x00

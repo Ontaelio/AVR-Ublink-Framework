@@ -91,53 +91,37 @@ uint8_t i2c_readStream(uint8_t* data, uint8_t len);
 class Twi{
 private:
     uint8_t device_addr, word_addr;
-
-public:
-    Twi(uint8_t addr, uint8_t reglen = 8) : device_addr(addr), word_addr(reglen) {}
-
-    void init(uint32_t scl_freq = 100000) {i2c_init(scl_freq);}
-
-    void write(uint16_t addr, uint8_t stuff) {
+    inline void startAndSendRegisterAddress(uint16_t regaddr){
         i2c_start();
         i2c_addrWrite(device_addr);
-        i2c_writeByte(addr);
+        if (word_addr) i2c_writeByte(regaddr>>8);
+        i2c_writeByte(regaddr&0xFF);
+    }
+
+public:
+    Twi(uint8_t addr, uint8_t reglen = 8) : device_addr(addr), word_addr(reglen > 8) {}
+
+    void init(uint32_t scl_freq = 100000) {i2c_init(scl_freq);}
+    uint8_t ping() {return i2c_ping(device_addr);}
+
+    inline void write(uint16_t addr, uint8_t stuff) {
+        startAndSendRegisterAddress(addr);
         i2c_writeByte(stuff);
         i2c_stop();
     }
 
-	void write16(uint16_t addr, uint16_t stuff){
-        i2c_start();
-        i2c_addrWrite(device_addr);
-        i2c_writeByte(addr);
-        i2c_writeByte(stuff>>8);
-        i2c_writeByte(stuff&0xFF);
-        i2c_stop();
-    }
+	void write16(uint16_t addr, uint16_t stuff, uint8_t littleEndian = I2C_MSB_FIRST);
+	void write32(uint16_t addr, uint32_t stuff, uint8_t littleEndian = I2C_MSB_FIRST);
 
-	void write32(uint16_t addr, uint32_t stuff){
-        i2c_start();
-        i2c_addrWrite(device_addr);
-        i2c_writeByte(addr);
-        i2c_writeByte(stuff>>24);
-        i2c_writeByte(stuff>>16);
-        i2c_writeByte(stuff>>8);
-        i2c_writeByte(stuff&0xFF);
-        i2c_stop();
-    }
-
-	void writeStream(uint16_t addr, uint8_t* stuff, uint8_t num){
-        i2c_start();
-        i2c_addrWrite(device_addr);
-        i2c_writeByte(addr);
+	inline void writeStream(uint16_t addr, uint8_t* stuff, uint8_t num){
+        startAndSendRegisterAddress(addr);
         i2c_writeStream(stuff, num);
         i2c_stop();
     }
 
-	uint8_t read(uint16_t addr){
+	inline uint8_t read(uint16_t addr){
         uint8_t res;
-        i2c_start();
-        i2c_addrWrite(device_addr);
-        i2c_writeByte(addr);
+        startAndSendRegisterAddress(addr);
         i2c_repeatedStart();
         i2c_addrRead(device_addr);
         i2c_readLast(res);
@@ -145,45 +129,16 @@ public:
         return res;
     }
 
-	uint16_t read16(uint16_t addr){
-        uint8_t res1, res2;
-        i2c_start();
-        i2c_addrWrite(device_addr);
-        i2c_writeByte(addr);
-        i2c_repeatedStart();
-        i2c_addrRead(device_addr);
-        i2c_readByte(res1);
-        i2c_readLast(res2);
-        i2c_stop();
-        return (((uint16_t)res1 << 8) | (res2)); // big endian only
-    }
-
-	uint32_t read32(uint16_t addr){
-        uint8_t res1, res2, res3, res4;
-        i2c_start();
-        i2c_addrWrite(device_addr);
-        i2c_writeByte(addr);
-        i2c_repeatedStart();
-        i2c_addrRead(device_addr);
-        i2c_readByte(res1);
-        i2c_readByte(res2);
-        i2c_readByte(res3);
-        i2c_readLast(res4);
-        i2c_stop();
-        return (((uint32_t)res1 << 24) | ((uint32_t)res2 << 16) | ((uint32_t)res3 << 8) | res4);
-    }
-
-	void readStream(uint16_t addr, uint8_t* arr, uint8_t num){
-        i2c_start();
-        i2c_addrWrite(device_addr);
-        i2c_writeByte(addr);
+	uint16_t read16(uint16_t addr, uint8_t littleEndian = I2C_MSB_FIRST);
+	uint32_t read32(uint16_t addr, uint8_t littleEndian = I2C_MSB_FIRST);
+    
+	inline void readStream(uint16_t addr, uint8_t* arr, uint8_t num){
+        startAndSendRegisterAddress(addr);
         i2c_repeatedStart();
         i2c_addrRead(device_addr);
         i2c_readStream(arr, num);
         i2c_stop();
     }
-
-
 };
 
 #endif // UBLINK_AVRTWI
