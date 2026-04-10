@@ -9,7 +9,7 @@
  * Can be freely used according to the GNU GPL license.
  */
 
- #include <..\dev\i2c.hpp>
+ #include <i2c.hpp>
 
  uint8_t i2c_resetBus(){
     // disable TWI
@@ -53,8 +53,6 @@
 
     return 3;
 }
-
-
 
 uint8_t i2c_ping(uint8_t slave_addr) {
     volatile uint16_t timeout = 0xFFFF;

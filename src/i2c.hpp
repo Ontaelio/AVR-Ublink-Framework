@@ -104,6 +104,13 @@ public:
     void init(uint32_t scl_freq = 100000) {i2c_init(scl_freq);}
     uint8_t ping() {return i2c_ping(device_addr);}
 
+    Twi& startWrite() {i2c_start(); i2c_addrWrite(device_addr); return *this;}
+    Twi& startRead() {i2c_start(); i2c_addrRead(device_addr); return *this;}
+    Twi& write(uint8_t tx) {i2c_writeByte(tx); return *this;}
+    Twi& read(uint8_t& rx) {i2c_readByte(rx); return *this;}
+    Twi& readLast(uint8_t& rx) {i2c_readLast(rx); return *this;}
+    inline void stop() {i2c_stop();}
+
     inline void write(uint16_t addr, uint8_t stuff) {
         startAndSendRegisterAddress(addr);
         i2c_writeByte(stuff);
@@ -140,5 +147,9 @@ public:
         i2c_stop();
     }
 };
+
+// aliaces for compatibility
+using i2c  	= Twi;
+using i2cSlave = Twi;
 
 #endif // UBLINK_AVRTWI
