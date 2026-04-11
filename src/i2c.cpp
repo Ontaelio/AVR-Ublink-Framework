@@ -210,12 +210,12 @@ uint8_t i2c_readByte(uint8_t& dataByte){
     TWCR = (1<<TWEN) | (1<<TWINT) | (1<<TWEA); // ACK
     while (!(TWCR & (1<<TWINT)));
     uint8_t status = TWSR & 0xF8;
-    if (status != I2C_MR_DATA_ACK) return status; //
+    if (status != I2C_MR_DATA_ACK) return status; // error
     dataByte = TWDR; 
     return I2C_OK;
 }
 
-uint8_t i2c_readStream(uint8_t* data, uint8_t len) {
+uint8_t i2c_readStream(uint8_t* data, uint16_t len) {
     if (len == 0) return 0;
 
     for (uint8_t i = 0; i < len; i++) {
@@ -241,7 +241,7 @@ uint8_t i2c_readStream(uint8_t* data, uint8_t len) {
 }
 
 // slave_addr already set to SLA+W, START sent
-uint8_t i2c_writeStream(uint8_t* data, uint8_t len) {
+uint8_t i2c_writeStream(uint8_t* data, uint16_t len) {
     for (uint8_t i = 0; i < len; i++) {
         TWDR = data[i];                 // 1. load a byte
         TWCR = (1<<TWEN) | (1<<TWINT); // 2. clear flag

@@ -78,10 +78,10 @@ uint8_t i2c_addrRead(uint8_t slave_addr);
 uint8_t i2c_addrRead10(uint16_t addr);
 uint8_t i2c_writeByte(uint8_t dataByte);
 uint8_t i2c_writeLast(uint8_t dataByte); // compatibility
-uint8_t i2c_writeStream(uint8_t* data, uint8_t len);
+uint8_t i2c_writeStream(uint8_t* data, uint16_t len);
 uint8_t i2c_readByte(uint8_t& dataByte); // returns ok/error, not byte; sends ACK
 uint8_t i2c_readLast(uint8_t& dataByte); // sends NACK
-uint8_t i2c_readStream(uint8_t* data, uint8_t len);
+uint8_t i2c_readStream(uint8_t* data, uint16_t len);
 
 
 /* ------------------------
@@ -107,8 +107,10 @@ public:
     Twi& startWrite() {i2c_start(); i2c_addrWrite(device_addr); return *this;}
     Twi& startRead() {i2c_start(); i2c_addrRead(device_addr); return *this;}
     Twi& write(uint8_t tx) {i2c_writeByte(tx); return *this;}
+    Twi& writeStream(uint8_t* data, uint16_t len) {i2c_writeStream(data, len); return *this;}
     Twi& read(uint8_t& rx) {i2c_readByte(rx); return *this;}
     Twi& readLast(uint8_t& rx) {i2c_readLast(rx); return *this;}
+    Twi& readStream(uint8_t* arr, uint16_t len) {i2c_readStream(arr, len); return *this;}
     inline void stop() {i2c_stop();}
 
     inline void write(uint16_t addr, uint8_t stuff) {
@@ -120,7 +122,7 @@ public:
 	void write16(uint16_t addr, uint16_t stuff, uint8_t littleEndian = I2C_MSB_FIRST);
 	void write32(uint16_t addr, uint32_t stuff, uint8_t littleEndian = I2C_MSB_FIRST);
 
-	inline void writeStream(uint16_t addr, uint8_t* stuff, uint8_t num){
+	inline void writeStream(uint16_t addr, uint8_t* stuff, uint16_t num){
         startAndSendRegisterAddress(addr);
         i2c_writeStream(stuff, num);
         i2c_stop();
@@ -139,7 +141,7 @@ public:
 	uint16_t read16(uint16_t addr, uint8_t littleEndian = I2C_MSB_FIRST);
 	uint32_t read32(uint16_t addr, uint8_t littleEndian = I2C_MSB_FIRST);
     
-	inline void readStream(uint16_t addr, uint8_t* arr, uint8_t num){
+	inline void readStream(uint16_t addr, uint8_t* arr, uint16_t num){
         startAndSendRegisterAddress(addr);
         i2c_repeatedStart();
         i2c_addrRead(device_addr);
