@@ -9,6 +9,9 @@
  * Can be freely used according to the GNU GPL license.
  */
 
+#ifndef UTILS_PRINTS_H_
+#define UTILS_PRINTS_H_
+
 #include <stdint.h>
 #include <stdlib.h>
 #include <avr/io.h>
@@ -265,4 +268,4 @@ void printTimer8Profile(usart term, timer2 tim){
    printT2prescaler(term, cfg);
 }
 
-
+#endif // UTILS_PRINTS_H_

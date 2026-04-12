@@ -198,6 +198,11 @@ public:
         for (uint8_t p = 0; p < 8; p++) clearPage(p);
         return *this;
     }
+    ssd1306& drawBox(uint8_t pg, uint8_t clmn, uint8_t* dat, uint8_t padding = 0){        
+        page(pg).column(clmn * 8 + padding * clmn);
+        sendData(dat, 8);
+        return *this;
+    }
 
     // horizontal mode
     ssd1306& cls() {
@@ -211,6 +216,7 @@ public:
         return *this;               
     }
 
+    // initialization and reset
     ssd1306& displayInit(){
          off()
         .chargePump(1);        // enable   
