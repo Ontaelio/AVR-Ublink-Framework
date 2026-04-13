@@ -26,6 +26,9 @@
 // remove unneeded characters at the start and at the end to save memory
 // uint8_t font8x8_source[NUMBER_OF_CHARACTERS][8] = {    
 
+// this basic font included as an example
+// courtesy of Daniel Hepper 
+// https://github.com/dhepper/font8x8/blob/master/font8x8_basic.h
 uint8_t font8x8_source[NUMBER_OF_CHARACTERS][8] = {    
     { 0x18, 0x3C, 0x3C, 0x18, 0x18, 0x00, 0x18, 0x00},   // U+0021 (!)
     { 0x36, 0x36, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},   // U+0022 (")

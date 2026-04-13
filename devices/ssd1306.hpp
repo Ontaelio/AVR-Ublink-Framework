@@ -198,8 +198,10 @@ public:
         for (uint8_t p = 0; p < 8; p++) clearPage(p);
         return *this;
     }
-    ssd1306& drawBox(uint8_t pg, uint8_t clmn, uint8_t* dat, uint8_t padding = 0){        
-        page(pg).column(clmn * 8 + padding * clmn);
+    ssd1306& drawBox(uint8_t pg, uint8_t clmn, uint8_t* dat, uint8_t padding = 0){ 
+        uint16_t col = clmn * (8 + padding);
+        if (col > 120) return *this;       
+        page(pg).column((uint8_t)col);
         sendData(dat, 8);
         return *this;
     }
